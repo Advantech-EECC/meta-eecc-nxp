@@ -136,64 +136,11 @@
 	status = "okay";
 };
 
-/*
-&dsi {
-	status = "okay";
-	ports {
-		port@1 {
-			reg = <1>;
-			mipi_dsi_out: endpoint {
-				remote-endpoint = <&it6161_from_dsim>;
-			};
-		};
-	};
-};
-*/
-
-&imx8ulp_cm33 {
-	ipc-only;
-	rsc-da=<0x1fff8000>;
-	mbox-names = "tx", "rx", "rxdb";
-	mboxes = <&mu 0 1
-			&mu 1 1
-			&mu 3 1>;
-	memory-region = <&vdevbuffer>, <&vdev0vring0>, <&vdev0vring1>,
-			<&vdev1vring0>, <&vdev1vring1>, <&rsc_table>;
-	status = "okay";
-};
-
 &lpuart5 {
 	/* console */
 	pinctrl-names = "default", "sleep";
 	pinctrl-0 = <&pinctrl_lpuart5>;
 	pinctrl-1 = <&pinctrl_lpuart5>;
-	status = "okay";
-};
-
-/*
-&lpi2c7 {
-	#address-cells = <1>;
-	#size-cells = <0>;
-	clock-frequency = <400000>;
-	pinctrl-names = "default", "sleep";
-	pinctrl-0 = <&pinctrl_lpi2c7>;
-	pinctrl-1 = <&pinctrl_lpi2c7>;
-	status = "okay";
-
-	pcal6408: gpio@21 {
-		compatible = "nxp,pcal9554b";
-		reg = <0x21>;
-		gpio-controller;
-		#gpio-cells = <2>;
-	};
-};
-*/
-
-&mu {
-	status = "okay";
-};
-
-&mu3 {
 	status = "okay";
 };
 
@@ -264,10 +211,6 @@
 	status = "okay";
 };
 
-&ele_mu {
-	memory-region = <&ele_reserved>;
-};
-
 &fec {
 	pinctrl-names = "default", "sleep";
 	pinctrl-0 = <&pinctrl_enet>;
@@ -294,41 +237,7 @@
 	};
 };
 
-&iomuxc0 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_hog_0>;
-
-	pinctrl_hog_0: hog0grp {
-		fsl,pins = <
-			MX8ULP_PAD_PTA5__PTA5_GPIOA     0x3
-			MX8ULP_PAD_PTB0__PTB0_GPIOB     0x3
-			MX8ULP_PAD_PTB1__PTB1_GPIOB     0x3
-			MX8ULP_PAD_PTB6__PTB6_GPIOB     0x3
-			MX8ULP_PAD_PTC0__PTC0_GPIOC     0x3
-			MX8ULP_PAD_PTC1__PTC1_GPIOC     0x3
-			MX8ULP_PAD_PTC2__PTC2_GPIOC     0x3
-			MX8ULP_PAD_PTC3__PTC3_GPIOC     0x3
-			MX8ULP_PAD_PTC4__PTC4_GPIOC     0x3
-			MX8ULP_PAD_PTC12__PTC12_GPIOC   0x3
-			MX8ULP_PAD_PTC18__PTC18_GPIOC   0x3
-			MX8ULP_PAD_PTC19__PTC19_GPIOC   0x3
-			MX8ULP_PAD_PTC20__PTC20_GPIOC   0x3
-		>;
-	};
-};
-
 &iomuxc1 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_hog_1>;
-
-	pinctrl_hog_1: hog1grp {
-		fsl,pins = <
-			MX8ULP_PAD_PTD12__PTD12 0x3
-			MX8ULP_PAD_PTD13__PTD13 0x3
-			MX8ULP_PAD_PTF1__PTF1 0x3
-		>;
-	};
-
 	pinctrl_enet: enetgrp {
 		fsl,pins = <
 			MX8ULP_PAD_PTE15__ENET0_MDC     0x43
@@ -381,13 +290,6 @@
 		fsl,pins = <
 			MX8ULP_PAD_PTF22__LPUART7_TX	0x3
 			MX8ULP_PAD_PTF23__LPUART7_RX	0x3
-		>;
-	};
-
-	pinctrl_lpi2c7: lpi2c7grp {
-		fsl,pins = <
-			MX8ULP_PAD_PTE12__LPI2C7_SCL	0x20
-			MX8ULP_PAD_PTE13__LPI2C7_SDA	0x20
 		>;
 	};
 
