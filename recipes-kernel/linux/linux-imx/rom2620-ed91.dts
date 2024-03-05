@@ -117,11 +117,11 @@
 		#clock-cells = <0>;
 	};
 
-	reg_5v: regulator-5v {
+	lt9211_1v8: regulator-lt9211 {
 		compatible = "regulator-fixed";
-		regulator-name = "5V";
-		regulator-min-microvolt = <5000000>;
-		regulator-max-microvolt = <5000000>;
+		regulator-name = "LVDS_BRIDGE";
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <1800000>;
 		regulator-always-on;
 	};
 
@@ -137,110 +137,90 @@
 		compatible = "mmc-pwrseq-simple";
 		reset-gpios = <&gpiof 26 GPIO_ACTIVE_LOW>;
 	};
-};
 
-&soc {
-	/* Got this from Advantech fork */
-	per_bridge1: bus@28080000 {
-		compatible = "simple-bus";
-		reg = <0x28080000 0x80000>;
-		#address-cells = <1>;
-		#size-cells = <1>;
-		ranges;
+	lvds_panel {
+		compatible = "panel-lvds";
+		width-mm = <170>;
+		height-mm = <110>;
+		backlight = <&lvds_panel_bl>;
+		enable-gpios = <&gpiod 20 GPIO_ACTIVE_HIGH>;
+		data-mapping = "vesa-24";
 
-		iomuxc0: pinctrl@280a1000 {
-			compatible = "fsl,imx8ulp-iomuxc0";
-			reg = <0x280a1000 0x1000>;
-			pinctrl-names = "default";
-			pinctrl-0 = <&pinctrl_hog_0>;
-
-			/* The following mux configuration does not affect booting*/
-			pinctrl_hog_0: hog0grp {
-				fsl,pins = <
-					MX8ULP_PAD_PTA5__PTA5_GPIOA     0x3
-					MX8ULP_PAD_PTB0__PTB0_GPIOB     0x3
-					MX8ULP_PAD_PTB1__PTB1_GPIOB     0x3
-					MX8ULP_PAD_PTB6__PTB6_GPIOB     0x3
-					MX8ULP_PAD_PTC0__PTC0_GPIOC     0x3
-					MX8ULP_PAD_PTC1__PTC1_GPIOC     0x3
-					MX8ULP_PAD_PTC2__PTC2_GPIOC     0x3
-					MX8ULP_PAD_PTC3__PTC3_GPIOC     0x3
-					MX8ULP_PAD_PTC4__PTC4_GPIOC     0x3
-					MX8ULP_PAD_PTC12__PTC12_GPIOC   0x3
-					MX8ULP_PAD_PTC18__PTC18_GPIOC   0x3
-					MX8ULP_PAD_PTC19__PTC19_GPIOC   0x3
-					MX8ULP_PAD_PTC20__PTC20_GPIOC   0x3
-				>;
-			};
-
-			pinctrl_usdhc2_gpio: usdhc2grpgpio {
-				fsl,pins = <
-					MX8ULP_PAD_PTC21__PTC21_GPIOC 0x3 /* M2_SDIO_RST */
-					MX8ULP_PAD_PTC23__PTC23_GPIOC 0x3 /* W_DISABLE1 */
-				>;
-			};
-
-			pinctrl_lpuart4_gpio: lpuart4grpgpio {
-				fsl,pins = <
-					MX8ULP_PAD_PTC22__PTC22_GPIOC 0x2 /* W_DISABLE2 */
-				>;
-			};
+		panel-timing {
+			clock-frequency = <33000000>;
+			hactive = <800>;
+			vactive = <480>;
+			hsync-len = <72>;
+			hfront-porch = <24>;
+			hback-porch = <104>;
+			vsync-len = <10>;
+			vfront-porch = <3>;
+			vback-porch = <57>;
 		};
 
-		pcc1: clock-controller@28091000 {
-			compatible = "fsl,imx8ulp-pcc1";
-			reg = <0x28091000 0x1000>;
-			#clock-cells = <1>;
-			#reset-cells = <1>;
+		port {
+			panel_in_lvds: endpoint {
+				remote-endpoint = <&lvds_out>;
+			};
 		};
 	};
-};
 
-&per_bridge3 {
-	tpm4: tpm@29330000 {
-		compatible = "fsl,imx8ulp-pwm", "fsl,imx7ulp-pwm";
-		reg = <0x29330000 0x1000>;
-		clocks = <&pcc3 IMX8ULP_CLK_TPM4>;
-		clock-names = "ipg";
-		assigned-clocks = <&pcc3 IMX8ULP_CLK_TPM4>;
-		assigned-clock-parents =  <&cgc1 IMX8ULP_CLK_SOSC_DIV2>;
-		assigned-clock-rates = <24000000>;
-		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_tpm4>;
-		#pwm-cells = <3>;
-		status = "okay";
+	lvds_panel_bl: bl {
+		compatible = "pwm-backlight";
+		pwms = <&tpm8 1 1000000 0>;
+		enable-gpios = <&gpiod 21 GPIO_ACTIVE_HIGH>;
+		brightness-levels = <0 25 50 75 100>;
+		default-brightness-level = <100>;
 	};
 };
 
-&per_bridge4 {
-	tpm7: tpm@29830000 {
-		compatible = "fsl,imx8ulp-pwm", "fsl,imx7ulp-pwm";
-		reg = <0x29830000 0x10000>;
-		clocks = <&pcc4 IMX8ULP_CLK_TPM7>;
-		clock-names = "ipg";
-		assigned-clocks = <&pcc4 IMX8ULP_CLK_TPM7>;
-		assigned-clock-parents =  <&cgc1 IMX8ULP_CLK_SOSC_DIV2>;
-		assigned-clock-rates = <24000000>;
-		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_tpm7>;
-		#pwm-cells = <3>;
-		status = "okay";
-	};
+&mu3 {
+	status = "okay";
+};
+
+&ele_mu {
+	memory-region = <&ele_reserved>;
+};
+
+&epxp {
+	status = "okay";
 };
 
 &per_bridge5 {
 	tpm8: tpm@2da80000 {
-		compatible = "fsl,imx8ulp-pwm", "fsl,imx7ulp-pwm";
+		compatible = "fsl,imx7ulp-pwm";
 		reg = <0x2da80000 0x10000>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_tpm8>;
 		clocks = <&pcc5 IMX8ULP_CLK_TPM8>;
 		clock-names = "ipg";
 		assigned-clocks = <&pcc5 IMX8ULP_CLK_TPM8>;
 		assigned-clock-parents =  <&cgc1 IMX8ULP_CLK_SOSC_DIV2>;
 		assigned-clock-rates = <24000000>;
-		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_tpm8>;
 		#pwm-cells = <3>;
 		status = "okay";
+	};
+};
+
+&dcnano {
+	status = "okay";
+};
+
+&dphy {
+	status = "okay";
+};
+
+&dsi {
+	status = "okay";
+
+	ports {
+		port@1 {
+			reg = <1>;
+
+			dsi_out: endpoint {
+				remote-endpoint = <&dsi_in>;
+			};
+		};
 	};
 };
 
@@ -250,13 +230,6 @@
 	assigned-clock-rates = <0>, <475200000>;
 	memory-region = <&dsp_vdev0buffer>, <&dsp_vdev0vring0>,
 			<&dsp_vdev0vring1>, <&dsp_reserved>;
-	status = "okay";
-};
-
-&i2c_rpbus_0 {
-	/* CAM i2c */
-	#address-cells = <1>;
-	#size-cells = <0>;
 	status = "okay";
 };
 
@@ -271,15 +244,6 @@
 			<&vdev1vring0>, <&vdev1vring1>, <&rsc_table>;
 	status = "okay";
 };
-
-/* UART B
-&lpuart2 {
-	pinctrl-names = "default", "sleep";
-	pinctrl-0 = <&pinctrl_lpuart2>;
-	pinctrl-1 = <&pinctrl_lpuart2>;
-	status = "okay";
-};
-*/
 
 &lpuart4 {
 	/* UART A */
@@ -304,6 +268,13 @@
 	status = "okay";
 };
 
+&i2c_rpbus_0 {
+	/* CAM i2c */
+	#address-cells = <1>;
+	#size-cells = <0>;
+	status = "okay";
+};
+
 &lpi2c6 {
 	#address-cells = <1>;
 	#size-cells = <0>;
@@ -312,6 +283,30 @@
 	pinctrl-0 = <&pinctrl_lpi2c6>;
 	pinctrl-1 = <&pinctrl_lpi2c6>;
 	status = "okay";
+
+	lvds-bridge@2d {
+		compatible = "lontium,lt9211";
+		reg = <0x2d>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_lvdsbridge &pinctrl_lvdspanel>;
+		vccio-supply = <&lt9211_1v8>;
+		reset-gpios = <&gpiof 7 GPIO_ACTIVE_HIGH>;
+		ports {
+			port@0 {
+				reg = <0>;
+				dsi_in: endpoint {
+					remote-endpoint = <&dsi_out>;
+				};
+			};
+
+			port@2 {
+				reg = <2>;
+				lvds_out: endpoint {
+					remote-endpoint = <&panel_in_lvds>;
+				};
+			};
+		};
+	};
 };
 
 &lpi2c7 {
@@ -321,10 +316,6 @@
 	pinctrl-names = "default", "sleep";
 	pinctrl-0 = <&pinctrl_lpi2c7>;
 	pinctrl-1 = <&pinctrl_lpi2c7>;
-	status = "okay";
-};
-
-&mu3 {
 	status = "okay";
 };
 
@@ -398,10 +389,6 @@
 	status = "okay";
 };
 
-&ele_mu {
-	memory-region = <&ele_reserved>;
-};
-
 &fec {
 	pinctrl-names = "default", "sleep";
 	pinctrl-0 = <&pinctrl_enet>;
@@ -429,33 +416,11 @@
 };
 
 &iomuxc1 {
-	pinctrl_tpm4: tpm4grp {
-		fsl,pins = <
-			MX8ULP_PAD_PTF16__TPM4_CH4	    0x42
-		>;
-	};
-
-	pinctrl_tpm7: tpm7grp {
-		fsl,pins = <
-			MX8ULP_PAD_PTF25__TPM7_CH5	    0x42
-			MX8ULP_PAD_PTF29__TPM7_CH2      0x42
-			MX8ULP_PAD_PTF30__TPM7_CH3      0x42
-			MX8ULP_PAD_PTF31__TPM7_CH4      0x42
-		>;
-	};
-
 	pinctrl_tpm8: tpm8grp {
 		fsl,pins = <
 			MX8ULP_PAD_PTD19__TPM8_CH1      0x42
 		>;
 	};
-
-/*
-	pinctrl_lpuart2: {
-		fsl,pins = <
-		>;
-	};
-*/
 
 	pinctrl_lpuart4: lpuart4grp {
 		fsl,pins = <
@@ -508,6 +473,19 @@
 		>;
 	};
 
+	pinctrl_lvdsbridge: lvdsbridgegrp {
+		fsl,pins = <
+			MX8ULP_PAD_PTF7__PTF7		0x2
+		>;
+	};
+
+	pinctrl_lvdspanel: lvdspanelgrp {
+		fsl,pins = <
+			MX8ULP_PAD_PTD20__PTD20		0x2
+			MX8ULP_PAD_PTD21__PTD21		0x2
+		>;
+	};
+
 	pinctrl_usdhc0: usdhc0grp {
 		fsl,pins = <
 			MX8ULP_PAD_PTD0__SDHC0_RESET_B	0x3
@@ -553,35 +531,4 @@
 			MX8ULP_PAD_PTE23__ENET0_TXD0	0x43
 		>;
 	};
-};
-
-&cameradev {
-	status = "okay";
-};
-
-&isi_0 {
-	status = "okay";
-
-	cap_device {
-		status = "okay";
-	};
-};
-
-&mipi_csi0 {
-	#address-cells = <1>;
-	#size-cells = <0>;
-
-	status = "okay";
-	port@0 {
-		reg = <0>;
-		mipi_csi0_ep: endpoint {
-			//remote-endpoint = <&ov5640_mipi_ep>;
-			//data-lanes = <1 2>;
-			//bus-type = <4>;
-		};
-	};
-};
-
-&epxp {
-	status = "okay";
 };
