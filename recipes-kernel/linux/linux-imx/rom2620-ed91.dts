@@ -36,6 +36,11 @@
 			linux,cma-default;
 		};
 
+		m33_reserved: m33_noncacheable_section@a8600000 {
+			reg = <0 0xa8600000 0 0x1000000>;
+			no-map;
+		};
+
 		rsc_table: rsc-table@1fff8000{
 			reg = <0 0x1fff8000 0 0x1000>;
 			no-map;
@@ -103,11 +108,6 @@
 			reg = <0 0xa8400000 0 0x100000>;
 			no-map;
 		};
-
-		m33_reserved: m33_noncacheable_section@a8600000 {
-			no-map;
-			reg = <0 0xa8600000 0 0x1000000>;
-		};
 	};
 
 	clock_ext_rmii: clock-ext-rmii {
@@ -172,6 +172,10 @@
 		brightness-levels = <0 25 50 75 100>;
 		default-brightness-level = <100>;
 	};
+};
+
+&mu {
+	status = "okay";
 };
 
 &mu3 {
