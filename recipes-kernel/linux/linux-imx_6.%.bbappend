@@ -11,3 +11,5 @@ do_configure:prepend() {
 }
 
 DELTA_KERNEL_DEFCONFIG += "lvds-support.cfg"
+
+#LOCALVERSION = "-lts-next-imx-6.6.3-1.0.0-adv"

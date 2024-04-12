@@ -237,7 +237,7 @@
 	status = "okay";
 };
 
-&imx8ulp_cm33 {
+&cm33 {
 	ipc-only;
 	rsc-da=<0x1fff8000>;
 	mbox-names = "tx", "rx", "rxdb";
@@ -320,7 +320,7 @@
 	pinctrl-names = "default", "sleep";
 	pinctrl-0 = <&pinctrl_lpi2c7>;
 	pinctrl-1 = <&pinctrl_lpi2c7>;
-	status = "okay";
+	status = "disabled";
 };
 
 &usbotg1 {
