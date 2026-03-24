@@ -22,6 +22,8 @@ Date:   Tue Dec 3 14:23:07 2024 +0800
     [ALL][DISPLAY] driver: Add the LVDS power on sequence
     commit 9e1727c7de8aa4e025dfbe300d75c1a1a77b0729
 
+20260313: update for lf-6.18.2-1.0.0
+
 Observation: ad hoc patch
 
 Upstream-Status: Inappropriate [other]
@@ -71,10 +73,10 @@ index 55eec4ea74e7..e03dde6a0e9b 100644
  	lcdifv3_enable_controller(lcdifv3);
  }
 diff --git a/drivers/gpu/drm/panel/panel-simple.c b/drivers/gpu/drm/panel/panel-simple.c
-index a1da779f304d..ab7023d2a26c 100644
+index e5ff712bb989..a6bd8e626808 100644
 --- a/drivers/gpu/drm/panel/panel-simple.c
 +++ b/drivers/gpu/drm/panel/panel-simple.c
-@@ -42,6 +42,33 @@
+@@ -43,6 +43,33 @@
  #include <drm/drm_panel.h>
  #include <drm/drm_of.h>
  
@@ -108,7 +110,7 @@ index a1da779f304d..ab7023d2a26c 100644
  /**
   * struct panel_desc - Describes a simple panel.
   */
-@@ -153,13 +180,141 @@ struct panel_simple {
+@@ -162,13 +189,141 @@ struct panel_simple {
  	struct drm_display_mode override_mode;
  
  	enum drm_panel_orientation orientation;
@@ -250,7 +252,7 @@ index a1da779f304d..ab7023d2a26c 100644
  static unsigned int panel_simple_get_timings_modes(struct panel_simple *panel,
  						   struct drm_connector *connector)
  {
-@@ -309,8 +464,16 @@ static int panel_simple_suspend(struct device *dev)
+@@ -318,8 +473,16 @@ static int panel_simple_suspend(struct device *dev)
  
  static int panel_simple_unprepare(struct drm_panel *panel)
  {
@@ -267,7 +269,7 @@ index a1da779f304d..ab7023d2a26c 100644
  	pm_runtime_mark_last_busy(panel->dev);
  	ret = pm_runtime_put_autosuspend(panel->dev);
  	if (ret < 0)
-@@ -332,7 +495,12 @@ static int panel_simple_resume(struct device *dev)
+@@ -341,7 +504,12 @@ static int panel_simple_resume(struct device *dev)
  		return err;
  	}
  
@@ -280,7 +282,7 @@ index a1da779f304d..ab7023d2a26c 100644
  
  	if (p->desc->delay.prepare)
  		msleep(p->desc->delay.prepare);
-@@ -357,9 +525,29 @@ static int panel_simple_enable(struct drm_panel *panel)
+@@ -366,9 +534,29 @@ static int panel_simple_enable(struct drm_panel *panel)
  {
  	struct panel_simple *p = to_panel_simple(panel);
  
@@ -310,7 +312,7 @@ index a1da779f304d..ab7023d2a26c 100644
  	return 0;
  }
  
-@@ -1326,6 +1514,60 @@ static const struct panel_desc auo_t215hvn01 = {
+@@ -1386,6 +1574,60 @@ static const struct panel_desc auo_t215hvn01 = {
  	.connector_type = DRM_MODE_CONNECTOR_LVDS,
  };
  
@@ -371,7 +373,7 @@ index a1da779f304d..ab7023d2a26c 100644
  static const struct drm_display_mode avic_tm070ddh03_mode = {
  	.clock = 51200,
  	.hdisplay = 1024,
-@@ -2670,9 +2912,11 @@ static const struct panel_desc innolux_g121x1_l03 = {
+@@ -2788,9 +3030,11 @@ static const struct panel_desc innolux_g121x1_l03 = {
  		.unprepare = 200,
  		.disable = 400,
  	},
@@ -383,7 +385,7 @@ index a1da779f304d..ab7023d2a26c 100644
  };
  
  static const struct panel_desc innolux_g121xce_l01 = {
-@@ -4724,6 +4968,14 @@ static const struct of_device_id platform_of_match[] = {
+@@ -5070,6 +5314,14 @@ static const struct of_device_id platform_of_match[] = {
  		.compatible = "auo,t215hvn01",
  		.data = &auo_t215hvn01,
  	}, {
@@ -398,7 +400,7 @@ index a1da779f304d..ab7023d2a26c 100644
  		.compatible = "avic,tm070ddh03",
  		.data = &avic_tm070ddh03,
  	}, {
-@@ -5377,11 +5629,346 @@ static const struct panel_desc_dsi osd101t2045_53ts = {
+@@ -5750,11 +6002,346 @@ static const struct panel_desc_dsi osd101t2045_53ts = {
  	.lanes = 4,
  };
  
@@ -709,7 +711,7 @@ index a1da779f304d..ab7023d2a26c 100644
 +	{
 +		.compatible = "auo,g070vw01v0",
 +		.data = &auo_g070vw01v0
- 	}, {
++	}, {
 +		.compatible = "auo,g150xgel05",
 +		.data = &auo_g150xgel05
 +	}, {
@@ -718,7 +720,7 @@ index a1da779f304d..ab7023d2a26c 100644
 +	}, {
 +		.compatible = "innolux,r190ece",
 +		.data = &innolux_r190ece
-+	}, {
+ 	}, {
 +		.compatible = "lg,lp097x02",
 +		.data = &lg_lp097x02
 +	},
@@ -745,9 +747,9 @@ index a1da779f304d..ab7023d2a26c 100644
  		.compatible = "boe,tv080wum-nl0",
  		.data = &boe_tv080wum_nl0
  	}, {
-@@ -5409,11 +5996,52 @@ static int panel_simple_dsi_probe(struct mipi_dsi_device *dsi)
- {
+@@ -5783,6 +6370,46 @@ static int panel_simple_dsi_probe(struct mipi_dsi_device *dsi)
  	const struct panel_desc_dsi *desc;
+ 	struct panel_simple *panel;
  	int err;
 +#if defined(CONFIG_ARCH_ADVANTECH) // patch1: e8fcbda7 Hank.Hsueh Dec 3 2024
 +	struct gpio_desc *gpio_dsi_vcc_enable_desc = NULL;
@@ -758,15 +760,10 @@ index a1da779f304d..ab7023d2a26c 100644
 +	struct gpio_desc *gpio_bklt_enable_desc = NULL;
 +#endif
 +#if defined(CONFIG_ARCH_ADVANTECH) // patch3: af78e96d kuihong.xin Jun 6 2025
-+	struct panel_simple *panel;
 +	const void *data;
 +	int len;
 +#endif
- 
- 	desc = of_device_get_match_data(&dsi->dev);
- 	if (!desc)
- 		return -ENODEV;
- 
++
 +#if defined(CONFIG_ARCH_ADVANTECH) // patch1: e8fcbda7 Hank.Hsueh Dec 3 2024 // patch2: 605789a5 Hank.Hsueh May 27 2025
 +	gpio_dsi_vcc_enable_desc = devm_gpiod_get_optional(&dsi->dev, "dsi-vcc-enable", GPIOD_OUT_LOW);
 +	if (gpio_dsi_vcc_enable_desc != NULL)
@@ -794,11 +791,10 @@ index a1da779f304d..ab7023d2a26c 100644
 +		gpiod_set_value_cansleep(gpio_bklt_enable_desc, 0);
 +	}
 +#endif
-+
- 	err = panel_simple_probe(&dsi->dev, &desc->desc);
- 	if (err < 0)
- 		return err;
-@@ -5422,6 +6050,47 @@ static int panel_simple_dsi_probe(struct mipi_dsi_device *dsi)
+ 
+ 	panel = panel_simple_probe(&dsi->dev);
+ 	if (IS_ERR(panel))
+@@ -5793,6 +6420,47 @@ static int panel_simple_dsi_probe(struct mipi_dsi_device *dsi)
  	dsi->format = desc->format;
  	dsi->lanes = desc->lanes;
  
@@ -847,7 +843,7 @@ index a1da779f304d..ab7023d2a26c 100644
  	if (err) {
  		struct panel_simple *panel = mipi_dsi_get_drvdata(dsi);
 diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-index 343e90974c28..56cf0f3193a2 100644
+index 2d55bd5cbd32..529b851725cf 100644
 --- a/drivers/video/backlight/pwm_bl.c
 +++ b/drivers/video/backlight/pwm_bl.c
 @@ -5,7 +5,17 @@
@@ -868,7 +864,7 @@ index 343e90974c28..56cf0f3193a2 100644
  #include <linux/gpio/consumer.h>
  #include <linux/module.h>
  #include <linux/kernel.h>
-@@ -18,6 +28,10 @@
+@@ -17,6 +27,10 @@
  #include <linux/pwm_backlight.h>
  #include <linux/regulator/consumer.h>
  #include <linux/slab.h>
@@ -879,7 +875,7 @@ index 343e90974c28..56cf0f3193a2 100644
  
  struct pwm_bl_data {
  	struct pwm_device	*pwm;
-@@ -28,6 +42,9 @@ struct pwm_bl_data {
+@@ -27,6 +41,9 @@ struct pwm_bl_data {
  	struct regulator	*power_supply;
  	struct gpio_desc	*enable_gpio;
  	unsigned int		scale;
@@ -889,7 +885,7 @@ index 343e90974c28..56cf0f3193a2 100644
  	unsigned int		post_pwm_on_delay;
  	unsigned int		pwm_off_delay;
  	int			(*notify)(struct device *,
-@@ -91,12 +108,138 @@ static int compute_duty_cycle(struct pwm_bl_data *pb, int brightness, struct pwm
+@@ -88,12 +105,138 @@ static int compute_duty_cycle(struct pwm_bl_data *pb, int brightness, struct pwm
  	return duty_cycle + lth;
  }
  
@@ -1028,11 +1024,10 @@ index 343e90974c28..56cf0f3193a2 100644
  	if (pb->notify)
  		brightness = pb->notify(pb->dev, brightness);
  
-@@ -372,6 +515,95 @@ static int pwm_backlight_parse_dt(struct device *dev,
- 
+@@ -357,6 +500,94 @@ static int pwm_backlight_parse_dt(struct device *dev,
  		data->max_brightness = num_levels - 1;
  	}
-+
+ 
 +#ifdef CONFIG_ARCH_ADVANTECH // patch1: e8fcbda7 Hank.Hsueh Dec 3 2024
 +	gpio_lvds_vcc_en_desc = devm_gpiod_get_optional(dev, "lvds-vcc-enable", GPIOD_OUT_LOW);
 +	gpio_bklt_vcc_en_desc = devm_gpiod_get_optional(dev, "bklt-vcc-enable", GPIOD_OUT_LOW);
@@ -1124,7 +1119,7 @@ index 343e90974c28..56cf0f3193a2 100644
  	return 0;
  }
  
-@@ -475,6 +707,9 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+@@ -460,6 +691,9 @@ static int pwm_backlight_probe(struct platform_device *pdev)
  	struct pwm_state state;
  	unsigned int i;
  	int ret;
@@ -1134,9 +1129,9 @@ index 343e90974c28..56cf0f3193a2 100644
  
  	if (!data) {
  		ret = pwm_backlight_parse_dt(&pdev->dev, &defdata);
-@@ -507,6 +742,13 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+@@ -490,6 +724,13 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 	pb->post_pwm_on_delay = data->post_pwm_on_delay;
  	pb->pwm_off_delay = data->pwm_off_delay;
- 	strcpy(pb->fb_id, data->fb_id);
  
 +#ifdef CONFIG_ARCH_ADVANTECH // patch3: af78e96d kuihong.xin Jun 6 2025
 +	pb->dft_enable = 1;
@@ -1148,7 +1143,7 @@ index 343e90974c28..56cf0f3193a2 100644
  	pb->enable_gpio = devm_gpiod_get_optional(&pdev->dev, "enable",
  						  GPIOD_ASIS);
  	if (IS_ERR(pb->enable_gpio)) {
-@@ -631,7 +873,13 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+@@ -614,7 +855,13 @@ static int pwm_backlight_probe(struct platform_device *pdev)
  
  	bl->props.brightness = data->dft_brightness;
  	bl->props.power = pwm_backlight_initial_power_state(pb);

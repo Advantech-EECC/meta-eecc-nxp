@@ -4,16 +4,18 @@ Date:   Wed Jun 12 12:32:04 2024 +0200
 
     refactor to prepare layer for adding more devices
 
+20260313: update for lf-6.18.2-1.0.0
+
 Observation: ad hoc patch
 
 Upstream-Status: Inappropriate [other]
 Signed-off-by: F. Aragon <francisco.aragon@advantech.de>
 
 diff --git a/drivers/gpu/drm/bridge/lontium-lt9211.c b/drivers/gpu/drm/bridge/lontium-lt9211.c
-index 933ca028d612..0c1af0487378 100644
+index 03fc8fd10f20..a4cc2d4041a8 100644
 --- a/drivers/gpu/drm/bridge/lontium-lt9211.c
 +++ b/drivers/gpu/drm/bridge/lontium-lt9211.c
-@@ -35,7 +35,7 @@
+@@ -34,7 +34,7 @@
  #define REG_CHIPID1				0x8101
  #define REG_CHIPID1_VALUE			0x01
  #define REG_CHIPID2				0x8102
@@ -22,23 +24,24 @@ index 933ca028d612..0c1af0487378 100644
  
  #define REG_DSI_LANE				0xd000
  /* DSI lane count - 0 means 4 lanes ; 1, 2, 3 means 1, 2, 3 lanes. */
-@@ -99,11 +99,15 @@ static struct lt9211 *bridge_to_lt9211(struct drm_bridge *bridge)
+@@ -98,12 +98,16 @@ static struct lt9211 *bridge_to_lt9211(struct drm_bridge *bridge)
  	return container_of(bridge, struct lt9211, bridge);
  }
  
 +static int lt9211_host_attach(struct lt9211 *ctx);
 +
  static int lt9211_attach(struct drm_bridge *bridge,
+ 			 struct drm_encoder *encoder,
  			 enum drm_bridge_attach_flags flags)
  {
  	struct lt9211 *ctx = bridge_to_lt9211(bridge);
  
 +	lt9211_host_attach(ctx);
 +
- 	return drm_bridge_attach(bridge->encoder, ctx->panel_bridge,
+ 	return drm_bridge_attach(encoder, ctx->panel_bridge,
  				 &ctx->bridge, flags);
  }
-@@ -308,24 +312,52 @@ static int lt9211_configure_timing(struct lt9211 *ctx,
+@@ -307,24 +311,52 @@ static int lt9211_configure_timing(struct lt9211 *ctx,
  static int lt9211_configure_plls(struct lt9211 *ctx,
  				 const struct drm_display_mode *mode)
  {
@@ -101,7 +104,7 @@ index 933ca028d612..0c1af0487378 100644
  	int ret;
  
  	/* DeSSC PLL reference clock is 25 MHz XTal. */
-@@ -352,14 +384,45 @@ static int lt9211_configure_plls(struct lt9211 *ctx,
+@@ -351,14 +383,45 @@ static int lt9211_configure_plls(struct lt9211 *ctx,
  	/* Wait for the DeSSC PLL to stabilize. */
  	msleep(100);
  
@@ -109,9 +112,9 @@ index 933ca028d612..0c1af0487378 100644
 -				     ARRAY_SIZE(lt9211_pcr_seq));
 +	ret = regmap_multi_reg_write(ctx->regmap, lt9211_pcr_seq1,
 +				     ARRAY_SIZE(lt9211_pcr_seq1));
- 	if (ret)
- 		return ret;
- 
++	if (ret)
++		return ret;
++
 +	msleep(100);
 +
 +	ret = regmap_read(ctx->regmap, 0xd026, &qval);
@@ -126,9 +129,9 @@ index 933ca028d612..0c1af0487378 100644
 +
 +	ret = regmap_multi_reg_write(ctx->regmap, lt9211_pcr_seq2,
 +								 ARRAY_SIZE(lt9211_pcr_seq2));
-+	if (ret)
-+		return ret;
-+
+ 	if (ret)
+ 		return ret;
+ 
 +	msleep(5);
 +
 +	ret = regmap_multi_reg_write(ctx->regmap, lt9211_pcr_seq3,
@@ -150,7 +153,7 @@ index 933ca028d612..0c1af0487378 100644
  	if (ret)
  		dev_err(ctx->dev, "PCR unstable, ret=%i\n", ret);
  
-@@ -687,7 +750,8 @@ static int lt9211_host_attach(struct lt9211 *ctx)
+@@ -685,7 +748,8 @@ static int lt9211_host_attach(struct lt9211 *ctx)
  	int ret;
  
  	endpoint = of_graph_get_endpoint_by_regs(dev->of_node, 0, -1);
@@ -160,11 +163,10 @@ index 933ca028d612..0c1af0487378 100644
  	host_node = of_graph_get_remote_port_parent(endpoint);
  	host = of_find_mipi_dsi_host_by_node(host_node);
  	of_node_put(host_node);
-@@ -758,11 +822,11 @@ static int lt9211_probe(struct i2c_client *client,
- 	ctx->bridge.funcs = &lt9211_funcs;
+@@ -757,10 +821,11 @@ static int lt9211_probe(struct i2c_client *client)
  	ctx->bridge.of_node = dev->of_node;
  	drm_bridge_add(&ctx->bridge);
--
+ 
 +/*
  	ret = lt9211_host_attach(ctx);
  	if (ret)

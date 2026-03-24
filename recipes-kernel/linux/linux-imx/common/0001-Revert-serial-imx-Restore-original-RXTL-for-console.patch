@@ -4,6 +4,8 @@ Date: Mon, 19 Jan 2026 17:00:22 +0100
 Subject: [PATCH] Revert "serial: imx: Restore original RXTL for console to fix
  data loss"
 
+20260313: update for lf-6.18.2-1.0.0
+
 Upstream-Status: Inappropriate
 
 This reverts commit 765af231964d6a6e0ad6946a247d0b4d43d0242f.
@@ -12,20 +14,19 @@ This reverts commit 765af231964d6a6e0ad6946a247d0b4d43d0242f.
  1 file changed, 5 insertions(+), 13 deletions(-)
 
 diff --git a/drivers/tty/serial/imx.c b/drivers/tty/serial/imx.c
-index c1476398a00bc..0b93988972f1d 100644
+index 611e338a6c1f..d89ffc965b6f 100644
 --- a/drivers/tty/serial/imx.c
 +++ b/drivers/tty/serial/imx.c
-@@ -235,9 +235,7 @@ struct imx_port {
+@@ -235,8 +235,6 @@ struct imx_port {
  	enum imx_tx_state	tx_state;
  	struct hrtimer		trigger_start_tx;
  	struct hrtimer		trigger_stop_tx;
+-	unsigned int		rxtl;
 -
  	struct pm_qos_request   pm_qos_req;
--	unsigned int		rxtl;
  };
  
- struct imx_port_ucrs {
-@@ -1333,7 +1331,6 @@ static void imx_uart_clear_rx_errors(struct imx_port *sport)
+@@ -1342,7 +1340,6 @@ static void imx_uart_clear_rx_errors(struct imx_port *sport)
  
  #define TXTL_DEFAULT 8
  #define RXTL_DEFAULT 8 /* 8 characters or aging timer */
@@ -33,7 +34,7 @@ index c1476398a00bc..0b93988972f1d 100644
  #define TXTL_DMA 8 /* DMA burst setting */
  #define RXTL_DMA 9 /* DMA burst setting */
  
-@@ -1458,7 +1455,7 @@ static void imx_uart_disable_dma(struct imx_port *sport)
+@@ -1468,7 +1465,7 @@ static void imx_uart_disable_dma(struct imx_port *sport)
  	ucr1 &= ~(UCR1_RXDMAEN | UCR1_TXDMAEN | UCR1_ATDMAEN);
  	imx_uart_writel(sport, ucr1, UCR1);
  
@@ -42,7 +43,7 @@ index c1476398a00bc..0b93988972f1d 100644
  
  	sport->dma_is_enabled = 0;
  }
-@@ -1483,12 +1480,7 @@ static int imx_uart_startup(struct uart_port *port)
+@@ -1493,12 +1490,7 @@ static int imx_uart_startup(struct uart_port *port)
  		return retval;
  	}
  
@@ -56,7 +57,7 @@ index c1476398a00bc..0b93988972f1d 100644
  
  	/* disable the DREN bit (Data Ready interrupt enable) before
  	 * requesting IRQs
-@@ -1955,7 +1947,7 @@ static int imx_uart_poll_init(struct uart_port *port)
+@@ -1965,7 +1957,7 @@ static int imx_uart_poll_init(struct uart_port *port)
  	if (retval)
  		clk_disable_unprepare(sport->clk_ipg);
  
@@ -65,7 +66,7 @@ index c1476398a00bc..0b93988972f1d 100644
  
  	uart_port_lock_irqsave(&sport->port, &flags);
  
-@@ -2047,7 +2039,7 @@ static int imx_uart_rs485_config(struct uart_port *port, struct ktermios *termio
+@@ -2057,7 +2049,7 @@ static int imx_uart_rs485_config(struct uart_port *port, struct ktermios *termio
  		/* If the receiver trigger is 0, set it to a default value */
  		ufcr = imx_uart_readl(sport, UFCR);
  		if ((ufcr & UFCR_RXTL_MASK) == 0)
@@ -74,7 +75,7 @@ index c1476398a00bc..0b93988972f1d 100644
  		imx_uart_start_rx(port);
  	}
  
-@@ -2232,7 +2224,7 @@ imx_uart_console_setup(struct console *co, char *options)
+@@ -2242,7 +2234,7 @@ imx_uart_console_setup(struct console *co, char *options)
  	else
  		imx_uart_console_get_options(sport, &baud, &parity, &bits);
  
@@ -83,6 +84,3 @@ index c1476398a00bc..0b93988972f1d 100644
  
  	retval = uart_set_options(&sport->port, co, baud, parity, bits, flow);
  
--- 
-2.43.0
-

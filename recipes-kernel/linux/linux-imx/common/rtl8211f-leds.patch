@@ -4,17 +4,19 @@ Date:   Fri May 26 23:03:21 2023 +0800
 
     [ALL][NET] driver: Add the setting of lan LED for the RTL8211F
 
+20260313: update for lf-6.18.2-1.0.0
+
 Observation: adapted from https://github.com/ADVANTECH-Corp/linux-imx.git
 
 Upstream-Status: Inappropriate [other]
 Signed-off-by: F. Aragon <francisco.aragon@advantech.de>
 
-diff --git a/drivers/net/phy/realtek.c b/drivers/net/phy/realtek.c
-index 354b367cdf64..acd393e53118 100644
---- a/drivers/net/phy/realtek.c
-+++ b/drivers/net/phy/realtek.c
-@@ -85,6 +85,18 @@ struct rtl821x_priv {
- 	struct clk *clk;
+diff --git a/drivers/net/phy/realtek/realtek_main.c b/drivers/net/phy/realtek/realtek_main.c
+index c21844cbed03..270d012654ea 100644
+--- a/drivers/net/phy/realtek/realtek_main.c
++++ b/drivers/net/phy/realtek/realtek_main.c
+@@ -181,9 +181,28 @@ struct rtl821x_priv {
+ 	u16 iner;
  };
  
 +static void rtl8211f_phy_fixup(struct phy_device *dev)
@@ -29,28 +31,28 @@ index 354b367cdf64..acd393e53118 100644
 +	phy_write(dev, 0x1f, 0x0000);
 +}
 +
++
  static int rtl821x_read_page(struct phy_device *phydev)
  {
- 	return __phy_read(phydev, RTL821x_PAGE_SELECT);
-@@ -141,6 +153,10 @@ static int rtl821x_probe(struct phy_device *phydev)
+-	return __phy_read(phydev, RTL821x_PAGE_SELECT);
++	int ret = __phy_read(phydev, RTL821x_PAGE_SELECT);
++
++	if (phydev && (0x001cc916 == phydev->phy_id)) {
++		rtl8211f_phy_fixup(phydev);
++	}
++
++	return ret;
+ }
  
- 	phydev->priv = priv;
+ static int rtl821x_write_page(struct phy_device *phydev, int page)
+@@ -657,6 +676,10 @@ static int rtl8211f_config_init(struct phy_device *phydev)
+ 		return ret;
+ 	}
  
 +	if (phydev && (0x001cc916 == phydev->phy_id)) {
 +		rtl8211f_phy_fixup(phydev);
 +	}
 +
- 	return 0;
- }
- 
-@@ -369,6 +385,10 @@ static int rtl8211f_config_init(struct phy_device *phydev)
+ 	ret = rtl8211f_config_rgmii_delay(phydev);
+ 	if (ret)
  		return ret;
- 	}
- 
-+	if (phydev && (0x001cc916 == phy_id)) {
-+		rtl8211f_phy_fixup(phydev);
-+	}
-+
- 	switch (phydev->interface) {
- 	case PHY_INTERFACE_MODE_RGMII:
- 		val_txdly = 0;
