@@ -1,5 +1,6 @@
 SRC_URI += " \
     file://imx95-aom5521-a2.dts;subdir=arch/arm64/boot/dts/freescale \
+    file://imx95-aom5521-a2-sof.dts;subdir=arch/arm64/boot/dts/freescale \
     file://imx95-aom5521-a2-difference.dtsi;subdir=arch/arm64/boot/dts/freescale \
     file://imx95-aom5521-a2-lpspi4.dtsi;subdir=arch/arm64/boot/dts/freescale \
     file://imx95-aom5521-a2-flexspi1.dtsi;subdir=arch/arm64/boot/dts/freescale \
@@ -39,6 +40,7 @@ SRC_URI += " \
 
 do_configure:prepend() {
     cp "${UNPACKDIR}/arch/arm64/boot/dts/freescale/imx95-aom5521-a2.dts" "${S}/arch/arm64/boot/dts/freescale/"
+    cp "${UNPACKDIR}/arch/arm64/boot/dts/freescale/imx95-aom5521-a2-sof.dts" "${S}/arch/arm64/boot/dts/freescale/"
     cp "${UNPACKDIR}/arch/arm64/boot/dts/freescale/imx95-aom5521-a2-can.dtsi" "${S}/arch/arm64/boot/dts/freescale/"
     cp "${UNPACKDIR}/arch/arm64/boot/dts/freescale/imx95-aom5521-a2-flexspi1.dtsi" "${S}/arch/arm64/boot/dts/freescale/"
     cp "${UNPACKDIR}/arch/arm64/boot/dts/freescale/imx95-aom5521-a2-lpspi4.dtsi" "${S}/arch/arm64/boot/dts/freescale/"
@@ -74,4 +76,5 @@ do_configure:prepend() {
     cp "${UNPACKDIR}/arch/arm64/boot/dts/freescale/imx95-aom5521-a2-gpioexp.dtsi" "${S}/arch/arm64/boot/dts/freescale/"
 
     echo 'dtb-$(CONFIG_ARCH_MXC) += imx95-aom5521-a2.dtb' >> ${S}/arch/arm64/boot/dts/freescale/Makefile
+    echo 'dtb-$(CONFIG_ARCH_MXC) += imx95-aom5521-a2-sof.dtb' >> ${S}/arch/arm64/boot/dts/freescale/Makefile
 }
