@@ -5,7 +5,7 @@ SRC_URI += " \
 do_configure:prepend() {
 
     # Point to custom device tree
-    sed -i "/^CONFIG_DEFAULT_FDT_FILE=/c\CONFIG_DEFAULT_FDT_FILE=\"aom5521-db2510.dtb\"" \
+    sed -i "/^CONFIG_DEFAULT_FDT_FILE=/c\CONFIG_DEFAULT_FDT_FILE=\"imx95-aom5521-a2.dtb\"" \
         ${S}/configs/imx95_19x19_evk_defconfig
 
     # Adjust SPI flash speed for AOM-5521 hardware
