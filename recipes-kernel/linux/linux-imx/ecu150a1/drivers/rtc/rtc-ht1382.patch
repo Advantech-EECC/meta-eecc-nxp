@@ -1,0 +1,30 @@
+Upstream-Status: Inappropriate
+
+diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
+index c2e928f48fc9..1a4c486a60d2 100644
+--- a/drivers/rtc/Kconfig
++++ b/drivers/rtc/Kconfig
+@@ -2029,4 +2029,13 @@ config RTC_DRV_POLARFIRE_SOC
+ 	  This driver can also be built as a module, if so, the module
+ 	  will be called "rtc-mpfs".
+ 
++config RTC_DRV_HT1382
++        tristate "HT1382 RTC"
++        help
++          If you say Y here you will get support for the
++          HOLTEK HT1382 RTC chips.
++
++          This driver can also be built as a module. If so, the module
++          will be called rtc-ht1382.
++
+ endif # RTC_CLASS
+diff --git a/drivers/rtc/Makefile b/drivers/rtc/Makefile
+index d6b9b4abd85c..d3858d1f1490 100644
+--- a/drivers/rtc/Makefile
++++ b/drivers/rtc/Makefile
+@@ -189,3 +189,4 @@ obj-$(CONFIG_RTC_DRV_WM8350)	+= rtc-wm8350.o
+ obj-$(CONFIG_RTC_DRV_X1205)	+= rtc-x1205.o
+ obj-$(CONFIG_RTC_DRV_XGENE)	+= rtc-xgene.o
+ obj-$(CONFIG_RTC_DRV_ZYNQMP)	+= rtc-zynqmp.o
++obj-$(CONFIG_RTC_DRV_HT1382)    += rtc-ht1382.o
+
