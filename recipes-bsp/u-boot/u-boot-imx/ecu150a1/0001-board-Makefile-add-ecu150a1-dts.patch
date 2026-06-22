@@ -1,0 +1,12 @@
+diff --git a/arch/arm/dts/Makefile b/arch/arm/dts/Makefile
+index 737e959..1e6889e 100644
+--- a/arch/arm/dts/Makefile
++++ b/arch/arm/dts/Makefile
+@@ -1152,6 +1152,7 @@ dtb-$(CONFIG_ARCH_IMX8M) += \
+ 	imx8mn-venice.dtb \
+ 	imx8mn-venice-gw7902.dtb \
+ 	imx8mq-evk.dtb \
++	ecu150a1.dtb \
+ 	imx8mm-beacon-kit.dtb \
+ 	imx8mn-beacon-kit.dtb \
+ 	imx8mq-mnt-reform2.dtb \
