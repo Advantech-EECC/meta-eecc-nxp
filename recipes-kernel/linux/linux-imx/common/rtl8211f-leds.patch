@@ -1,58 +1,80 @@
-commit 248725a5ef70b0fb81d4b91b6b34188b9fa90013
-Author: clayderhua <clayderhua@gmail.com>
-Date:   Fri May 26 23:03:21 2023 +0800
+From fd505fa5e7aba7fe754b26938f6419f95166ae07 Mon Sep 17 00:00:00 2001
+From: Mikhail Tsukerman <mikhail.tsukerman@advantech.de>
+Date: Tue, 16 Jun 2026 14:53:55 +0000
+Subject: [PATCH] net: phy: realtek: rework RTL8211F LED fixup to avoid freeze
+ on read_page
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-    [ALL][NET] driver: Add the setting of lan LED for the RTL8211F
+The original patch called rtl8211f_phy_fixup() (which contains msleep(200)
+and phy_write() calls) from rtl821x_read_page(). This caused two problems:
 
-20260313: update for lf-6.18.2-1.0.0
+1. msleep(200) on every PHY page read → system freeze during probe
+2. phy_write() acquiring the MDIO mutex while it was already held by
+   phy_select_page() → potential deadlock
 
-Observation: adapted from https://github.com/ADVANTECH-Corp/linux-imx.git
+Fix by:
+- Moving the fixup call exclusively to rtl8211f_config_init(), where it
+  runs once at initialization time
+- Keeping rtl821x_read_page() as the original simple __phy_read() wrapper
+- Adding RTL_8211F_PHYID constant for the RTL8211F PHY ID (0x001cc916)
+- Removing unused device_node variable from fixup function
 
 Upstream-Status: Inappropriate [other]
 Signed-off-by: F. Aragon <francisco.aragon@advantech.de>
+---
+ drivers/net/phy/realtek/realtek_main.c | 16 +++++++++++++++-
+ 1 file changed, 15 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/net/phy/realtek/realtek_main.c b/drivers/net/phy/realtek/realtek_main.c
-index c21844cbed03..270d012654ea 100644
+index c21844cbed03..081a9d620f66 100644
 --- a/drivers/net/phy/realtek/realtek_main.c
 +++ b/drivers/net/phy/realtek/realtek_main.c
-@@ -181,9 +181,28 @@ struct rtl821x_priv {
+@@ -159,6 +159,7 @@
+ #define	RTL_MDIO_PCS_EEE_ABLE2			0xa6ec
+ 
+ #define RTL_GENERIC_PHYID			0x001cc800
++#define RTL_8211F_PHYID				0x001cc916
+ #define RTL_8211FVD_PHYID			0x001cc878
+ #define RTL_8221B				0x001cc840
+ #define RTL_8221B_VB_CG				0x001cc849
+@@ -181,6 +182,16 @@ struct rtl821x_priv {
  	u16 iner;
  };
  
-+static void rtl8211f_phy_fixup(struct phy_device *dev)
++static void rtl8211f_phy_fixup(struct phy_device *phydev)
 +{
-+	struct device_node *node = dev->mdio.dev.of_node;
-+
 +	msleep(200);
-+	phy_write(dev, 0x1f, 0x0d04);
-+	/*PHY LED OK*/
-+	phy_write(dev, 0x10, 0xa050);
-+	phy_write(dev, 0x11, 0x0000);
-+	phy_write(dev, 0x1f, 0x0000);
++	phy_write(phydev, 0x1f, 0x0d04);
++	/* PHY LED OK */
++	phy_write(phydev, 0x10, 0xa050);
++	phy_write(phydev, 0x11, 0x0000);
++	phy_write(phydev, 0x1f, 0x0000);
 +}
-+
 +
  static int rtl821x_read_page(struct phy_device *phydev)
  {
--	return __phy_read(phydev, RTL821x_PAGE_SELECT);
-+	int ret = __phy_read(phydev, RTL821x_PAGE_SELECT);
-+
-+	if (phydev && (0x001cc916 == phydev->phy_id)) {
-+		rtl8211f_phy_fixup(phydev);
-+	}
-+
-+	return ret;
- }
- 
- static int rtl821x_write_page(struct phy_device *phydev, int page)
-@@ -657,6 +676,10 @@ static int rtl8211f_config_init(struct phy_device *phydev)
- 		return ret;
- 	}
- 
-+	if (phydev && (0x001cc916 == phydev->phy_id)) {
-+		rtl8211f_phy_fixup(phydev);
-+	}
-+
- 	ret = rtl8211f_config_rgmii_delay(phydev);
+ 	return __phy_read(phydev, RTL821x_PAGE_SELECT);
+@@ -661,6 +672,9 @@ static int rtl8211f_config_init(struct phy_device *phydev)
  	if (ret)
  		return ret;
+ 
++	if (phydev->drv->phy_id == RTL_8211F_PHYID)
++		rtl8211f_phy_fixup(phydev);
++
+ 	ret = rtl8211f_disable_clk_out(phydev);
+ 	if (ret) {
+ 		dev_err(dev, "clkout configuration failed: %pe\n",
+@@ -1797,7 +1811,7 @@ static struct phy_driver realtek_drvs[] = {
+ 		.led_hw_control_get = rtl8211e_led_hw_control_get,
+ 		.led_hw_control_set = rtl8211e_led_hw_control_set,
+ 	}, {
+-		PHY_ID_MATCH_EXACT(0x001cc916),
++		PHY_ID_MATCH_EXACT(RTL_8211F_PHYID),
+ 		.name		= "RTL8211F Gigabit Ethernet",
+ 		.probe		= rtl8211f_probe,
+ 		.config_init	= &rtl8211f_config_init,
+-- 
+2.43.0
+
