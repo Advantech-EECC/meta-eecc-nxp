@@ -1,0 +1,108 @@
+From 0f3913057a318342441399b750a0b69779609b13 Mon Sep 17 00:00:00 2001
+From: Mikhail Tsukerman <miketsukerman@gmail.com>
+Date: Fri, 19 Jun 2026 17:09:47 +0200
+Subject: [PATCH] Detect memory size during initial SPL boot
+Upstream-Status: Inappropriate
+---
+ board/freescale/imx8mq_evk/Makefile |  6 +---
+ board/freescale/imx8mq_evk/spl.c    | 54 ++++++++++++++++++++++++++---
+ 2 files changed, 50 insertions(+), 10 deletions(-)
+
+diff --git a/board/freescale/imx8mq_evk/Makefile b/board/freescale/imx8mq_evk/Makefile
+index 63b7248b56a..b1983a62d78 100644
+--- a/board/freescale/imx8mq_evk/Makefile
++++ b/board/freescale/imx8mq_evk/Makefile
+@@ -8,9 +8,5 @@ obj-y += imx8mq_evk.o
+ 
+ ifdef CONFIG_XPL_BUILD
+ obj-y += spl.o
+-ifdef CONFIG_IMX8MQ_4GB_DDR_TIMING
+-obj-$(CONFIG_IMX8M_LPDDR4) += lpddr4_timing_4g.o
+-else
+-obj-$(CONFIG_IMX8M_LPDDR4) += lpddr4_timing_b0.o lpddr4_timing.o
+-endif
++obj-$(CONFIG_IMX8M_LPDDR4) += lpddr4_timing_1g.o lpddr4_timing_2g.o lpddr4_timing_4g.o lpddr4_timing_b0.o
+ endif
+diff --git a/board/freescale/imx8mq_evk/spl.c b/board/freescale/imx8mq_evk/spl.c
+index c4f02655242..ba99539b9c7 100644
+--- a/board/freescale/imx8mq_evk/spl.c
++++ b/board/freescale/imx8mq_evk/spl.c
+@@ -35,8 +35,9 @@
+ 
+ DECLARE_GLOBAL_DATA_PTR;
+ 
+-extern struct dram_timing_info dram_timing_b0;
+ extern struct dram_timing_info dram_timing_4g;
++extern struct dram_timing_info dram_timing_2g;
++extern struct dram_timing_info dram_timing_1g;
+ 
+ static void spl_dram_init(void)
+ {
+@@ -51,10 +52,45 @@ static void spl_dram_init(void)
+ 	}
+ #else
+ 	/* ddr init */
+-	if (soc_rev() >= CHIP_REV_2_1)
+-		ddr_init(&dram_timing);
+-	else
+-		ddr_init(&dram_timing_b0);
++	if (soc_rev() >= CHIP_REV_2_1) {
++		puts("SPL: probing DDR timing profiles\n");
++		phys_size_t ram_size;
++
++		puts("SPL: trying 4GB DDR timing\n");
++		ddr_init(&dram_timing_4g);
++		ram_size = get_ram_size((long *)0x40000000, (long)SZ_4G);
++		printf("SPL: 4GB timing detected %llu MiB RAM\n",
++		       (unsigned long long)(ram_size / SZ_1M));
++		if (ram_size >= SZ_4G) {
++			puts("SPL: selected 4GB DDR timing\n");
++			return;
++		}
++
++		puts("SPL: trying 2GB DDR timing\n");
++		ddr_init(&dram_timing_2g);
++		ram_size = get_ram_size((long *)0x40000000, (long)SZ_2G);
++		printf("SPL: 2GB timing detected %llu MiB RAM\n",
++		       (unsigned long long)(ram_size / SZ_1M));
++		if (ram_size >= SZ_2G) {
++			puts("SPL: selected 2GB DDR timing\n");
++			return;
++		}
++
++		puts("SPL: trying 1GB DDR timing\n");
++		ddr_init(&dram_timing_1g);
++		ram_size = get_ram_size((long *)0x40000000, (long)SZ_1G);
++		printf("SPL: 1GB timing detected %llu MiB RAM\n",
++		       (unsigned long long)(ram_size / SZ_1M));
++		if (ram_size >= SZ_1G) {
++			puts("SPL: selected 1GB DDR timing\n");
++			return;
++		}
++
++		panic("No supported DDR timing profile detected\n");
++	} else {
++		panic("Unsupported SOC Revision\n");
++	}
++
+ #endif
+ }
+ 
+@@ -233,6 +269,14 @@ void spl_board_init(void)
+ 			printf("\nsec_init failed!\n");
+ 	}
+ 
++#ifndef CONFIG_SPL_USB_SDP_SUPPORT
++	/* Serial download mode */
++	if (is_usb_boot()) {
++		puts("Back to ROM, SDP\n");
++		restore_boot_params();
++	}
++#endif
++
+ 	init_usb_clk();
+ 
+ 	puts("Normal Boot\n");
+-- 
+2.43.0
+
