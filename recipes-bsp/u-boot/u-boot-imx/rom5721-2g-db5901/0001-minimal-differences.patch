@@ -19,11 +19,16 @@ Observation: ad hoc patch
 Upstream-Status: Inappropriate [other]
 Signed-off-by: F. Aragon <francisco.aragon@advantech.de>
 
+---
+ board/nxp/imx8mm_evk/imx8mm_evk.c             | 29 ++++++++-
+ .../src/arm64/freescale/imx8mm-evk.dtsi       | 60 ++-----------------
+ 2 files changed, 31 insertions(+), 58 deletions(-)
+
 diff --git a/board/nxp/imx8mm_evk/imx8mm_evk.c b/board/nxp/imx8mm_evk/imx8mm_evk.c
-index 8ca1d19b236..bade63557dd 100644
+index 3ec5bb585b2..561306d0714 100644
 --- a/board/nxp/imx8mm_evk/imx8mm_evk.c
 +++ b/board/nxp/imx8mm_evk/imx8mm_evk.c
-@@ -27,14 +27,23 @@ DECLARE_GLOBAL_DATA_PTR;
+@@ -25,14 +25,23 @@
  #define WDOG_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_ODE | PAD_CTL_PUE | PAD_CTL_PE)
  
  static iomux_v3_cfg_t const uart_pads[] = {
@@ -49,7 +54,7 @@ index 8ca1d19b236..bade63557dd 100644
  #ifdef CONFIG_NAND_MXS
  #ifdef CONFIG_SPL_BUILD
  #define NAND_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_FSEL2 | PAD_CTL_HYS)
-@@ -320,6 +329,22 @@ int board_init(void)
+@@ -321,6 +330,22 @@ int board_init(void)
  	if (IS_ENABLED(CONFIG_FEC_MXC))
  		setup_fec();
  
@@ -73,10 +78,10 @@ index 8ca1d19b236..bade63557dd 100644
  }
  
 diff --git a/dts/upstream/src/arm64/freescale/imx8mm-evk.dtsi b/dts/upstream/src/arm64/freescale/imx8mm-evk.dtsi
-index 5f8336217bb..97907bf307f 100644
+index ff7ca207523..5cb90061683 100644
 --- a/dts/upstream/src/arm64/freescale/imx8mm-evk.dtsi
 +++ b/dts/upstream/src/arm64/freescale/imx8mm-evk.dtsi
-@@ -141,31 +141,6 @@
+@@ -141,32 +141,6 @@
  		};
  	};
  
@@ -86,6 +91,7 @@ index 5f8336217bb..97907bf307f 100644
 -		simple-audio-card,format = "i2s";
 -		simple-audio-card,frame-master = <&cpudai>;
 -		simple-audio-card,bitclock-master = <&cpudai>;
+-		simple-audio-card,mclk-fs = <256>;
 -		simple-audio-card,widgets =
 -			"Line", "Left Line Out Jack",
 -			"Line", "Right Line Out Jack";
@@ -97,34 +103,42 @@ index 5f8336217bb..97907bf307f 100644
 -			sound-dai = <&sai3>;
 -			dai-tdm-slot-num = <2>;
 -			dai-tdm-slot-width = <32>;
+-			system-clock-direction-out;
 -		};
 -
 -		simple-audio-card,codec {
 -			sound-dai = <&wm8524>;
--			clocks = <&clk IMX8MM_CLK_SAI3_ROOT>;
 -		};
 -	};
 -
  	sound-micfil {
  		compatible = "fsl,imx-audio-card";
  		model = "micfil-audio";
-@@ -554,15 +529,6 @@
+@@ -568,23 +542,6 @@
  	status = "okay";
  };
  
 -&sai3 {
 -	pinctrl-names = "default";
 -	pinctrl-0 = <&pinctrl_sai3>;
--	assigned-clocks = <&clk IMX8MM_CLK_SAI3>;
--	assigned-clock-parents = <&clk IMX8MM_AUDIO_PLL1_OUT>;
--	assigned-clock-rates = <24576000>;
+-	assigned-clocks = <&clk IMX8MM_AUDIO_PLL1>,
+-			  <&clk IMX8MM_AUDIO_PLL2>,
+-			  <&clk IMX8MM_CLK_SAI3>;
+-	assigned-clock-parents = <0>, <0>, <&clk IMX8MM_AUDIO_PLL1_OUT>;
+-	assigned-clock-rates = <393216000>, <361267200>, <24576000>;
+-	fsl,sai-mclk-direction-output;
+-	clocks = <&clk IMX8MM_CLK_SAI3_IPG>, <&clk IMX8MM_CLK_DUMMY>,
+-		<&clk IMX8MM_CLK_SAI3_ROOT>, <&clk IMX8MM_CLK_DUMMY>,
+-		<&clk IMX8MM_CLK_DUMMY>, <&clk IMX8MM_AUDIO_PLL1_OUT>,
+-		<&clk IMX8MM_AUDIO_PLL2_OUT>;
+-	clock-names = "bus", "mclk0", "mclk1", "mclk2", "mclk3", "pll8k", "pll11k";
 -	status = "okay";
 -};
 -
  &snvs_pwrkey {
  	status = "okay";
  };
-@@ -620,7 +586,7 @@
+@@ -642,7 +599,7 @@
  	pinctrl-0 = <&pinctrl_usdhc2>, <&pinctrl_usdhc2_gpio>;
  	pinctrl-1 = <&pinctrl_usdhc2_100mhz>, <&pinctrl_usdhc2_gpio>;
  	pinctrl-2 = <&pinctrl_usdhc2_200mhz>, <&pinctrl_usdhc2_gpio>;
@@ -133,7 +147,7 @@ index 5f8336217bb..97907bf307f 100644
  	bus-width = <4>;
  	vmmc-supply = <&reg_usdhc2_vmmc>;
  	status = "okay";
-@@ -745,15 +711,6 @@
+@@ -767,15 +724,6 @@
  		>;
  	};
  
@@ -149,7 +163,7 @@ index 5f8336217bb..97907bf307f 100644
  	pinctrl_spdif1: spdif1grp {
  		fsl,pins = <
  			MX8MM_IOMUXC_SPDIF_TX_SPDIF1_OUT	0xd6
-@@ -769,14 +726,14 @@
+@@ -791,14 +739,14 @@
  
  	pinctrl_uart2: uart2grp {
  		fsl,pins = <
@@ -167,3 +181,6 @@ index 5f8336217bb..97907bf307f 100644
  		>;
  	};
  
+-- 
+2.43.0
+
