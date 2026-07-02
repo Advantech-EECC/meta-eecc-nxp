@@ -1,8 +1,8 @@
-From fd505fa5e7aba7fe754b26938f6419f95166ae07 Mon Sep 17 00:00:00 2001
-From: Mikhail Tsukerman <mikhail.tsukerman@advantech.de>
-Date: Tue, 16 Jun 2026 14:53:55 +0000
-Subject: [PATCH] net: phy: realtek: rework RTL8211F LED fixup to avoid freeze
- on read_page
+From 964fd49e5980a0a333cf807ccc210eb3e3cc63cc Mon Sep 17 00:00:00 2001
+From: Mikhail Tsukerman <miketsukerman@gmail.com>
+Date: Thu, 2 Jul 2026 13:19:45 +0200
+Subject: [PATCH] [PATCH] net: phy: realtek: rework RTL8211F LED fixup to avoid
+ freeze on read_page
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -20,15 +20,12 @@ Fix by:
 - Keeping rtl821x_read_page() as the original simple __phy_read() wrapper
 - Adding RTL_8211F_PHYID constant for the RTL8211F PHY ID (0x001cc916)
 - Removing unused device_node variable from fixup function
-
-Upstream-Status: Inappropriate [other]
-Signed-off-by: F. Aragon <francisco.aragon@advantech.de>
 ---
  drivers/net/phy/realtek/realtek_main.c | 16 +++++++++++++++-
  1 file changed, 15 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/net/phy/realtek/realtek_main.c b/drivers/net/phy/realtek/realtek_main.c
-index c21844cbed03..081a9d620f66 100644
+index 7c3d277efaf0..a6ddb61d3bf0 100644
 --- a/drivers/net/phy/realtek/realtek_main.c
 +++ b/drivers/net/phy/realtek/realtek_main.c
 @@ -159,6 +159,7 @@
@@ -56,17 +53,17 @@ index c21844cbed03..081a9d620f66 100644
  static int rtl821x_read_page(struct phy_device *phydev)
  {
  	return __phy_read(phydev, RTL821x_PAGE_SELECT);
-@@ -661,6 +672,9 @@ static int rtl8211f_config_init(struct phy_device *phydev)
+@@ -685,6 +696,9 @@ static int rtl8211f_config_init(struct phy_device *phydev)
  	if (ret)
  		return ret;
  
 +	if (phydev->drv->phy_id == RTL_8211F_PHYID)
 +		rtl8211f_phy_fixup(phydev);
 +
- 	ret = rtl8211f_disable_clk_out(phydev);
+ 	ret = rtl8211f_config_clk_out(phydev);
  	if (ret) {
  		dev_err(dev, "clkout configuration failed: %pe\n",
-@@ -1797,7 +1811,7 @@ static struct phy_driver realtek_drvs[] = {
+@@ -1811,7 +1825,7 @@ static struct phy_driver realtek_drvs[] = {
  		.led_hw_control_get = rtl8211e_led_hw_control_get,
  		.led_hw_control_set = rtl8211e_led_hw_control_set,
  	}, {
