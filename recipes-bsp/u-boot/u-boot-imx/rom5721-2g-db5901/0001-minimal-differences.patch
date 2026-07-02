@@ -19,10 +19,10 @@ Observation: ad hoc patch
 Upstream-Status: Inappropriate [other]
 Signed-off-by: F. Aragon <francisco.aragon@advantech.de>
 
-diff --git a/board/freescale/imx8mm_evk/imx8mm_evk.c b/board/freescale/imx8mm_evk/imx8mm_evk.c
+diff --git a/board/nxp/imx8mm_evk/imx8mm_evk.c b/board/nxp/imx8mm_evk/imx8mm_evk.c
 index 8ca1d19b236..bade63557dd 100644
---- a/board/freescale/imx8mm_evk/imx8mm_evk.c
-+++ b/board/freescale/imx8mm_evk/imx8mm_evk.c
+--- a/board/nxp/imx8mm_evk/imx8mm_evk.c
++++ b/board/nxp/imx8mm_evk/imx8mm_evk.c
 @@ -27,14 +27,23 @@ DECLARE_GLOBAL_DATA_PTR;
  #define WDOG_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_ODE | PAD_CTL_PUE | PAD_CTL_PE)
  

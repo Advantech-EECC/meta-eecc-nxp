@@ -754,35 +754,6 @@
 	};
 };
 
-&vpu {
-	status = "disabled";
-};
-
-// &gpu3d {
-// 	status = "disabled";
-// };
-
 &irqsteer {
 	status = "okay";
-};
-
-&dcss {
-	status = "disabled";
-
-	port@0 {
-		dcss_out: endpoint {
-			  remote-endpoint = <&hdmi_in>;
-		};
-	};
-};
-
-&hdmi {
-	compatible = "cdn,imx8mq-hdmi";
-	lane-mapping = <0xe4>;
-	status = "disabled";
-	port@1 {
-		hdmi_in: endpoint {
-			remote-endpoint = <&dcss_out>;
-		};
-	};
 };

@@ -2,10 +2,10 @@ Observation: ad hoc patch
 Upstream-Status: Inappropriate [other]
 Signed-off-by: F. Aragon <francisco.aragon@advantech.de>
 
-diff --git a/board/freescale/imx8mm_evk/Makefile b/board/freescale/imx8mm_evk/Makefile
+diff --git a/board/nxp/imx8mm_evk/Makefile b/board/nxp/imx8mm_evk/Makefile
 index 3c4aff98923..9fc84bfb0c3 100644
---- a/board/freescale/imx8mm_evk/Makefile
-+++ b/board/freescale/imx8mm_evk/Makefile
+--- a/board/nxp/imx8mm_evk/Makefile
++++ b/board/nxp/imx8mm_evk/Makefile
 @@ -8,10 +8,5 @@ obj-y += imx8mm_evk.o
  
  ifdef CONFIG_XPL_BUILD

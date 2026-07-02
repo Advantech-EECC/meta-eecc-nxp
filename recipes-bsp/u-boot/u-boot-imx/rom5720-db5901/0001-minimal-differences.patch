@@ -17,7 +17,7 @@ Date:   Thu Apr 17 18:45:03 2025 +0200
          recipes-bsp/u-boot/u-boot-imx/rom5720-db5901/0001-minimal-differences.patch
             From changes in files:
             arch/arm/dts/imx8mq-evk.dts
-            board/freescale/imx8mq_evk/Makefile
+            board/nxp/imx8mq_evk/Makefile
             include/configs/imx8mq_evk.h
 
 Updates:
@@ -60,10 +60,10 @@ index badb2699972..af494aacf6a 100644
  	snps,dis-u1-entry-quirk;
  	snps,dis-u2-entry-quirk;
  	status = "okay";
-diff --git a/board/freescale/imx8mq_evk/Makefile b/board/freescale/imx8mq_evk/Makefile
+diff --git a/board/nxp/imx8mq_evk/Makefile b/board/nxp/imx8mq_evk/Makefile
 index 63b7248b56a..eb9f272f2c1 100644
---- a/board/freescale/imx8mq_evk/Makefile
-+++ b/board/freescale/imx8mq_evk/Makefile
+--- a/board/nxp/imx8mq_evk/Makefile
++++ b/board/nxp/imx8mq_evk/Makefile
 @@ -8,9 +8,6 @@ obj-y += imx8mq_evk.o
  
  ifdef CONFIG_XPL_BUILD
@@ -76,10 +76,10 @@ index 63b7248b56a..eb9f272f2c1 100644
 +obj-$(CONFIG_IMX8M_LPDDR4) += lpddr4_timing_rom5720a1_2G.o
 +obj-$(CONFIG_IMX8M_LPDDR4) += lpddr4_timing_b0.o
  endif
-diff --git a/board/freescale/imx8mq_evk/imx8mq_evk.env b/board/freescale/imx8mq_evk/imx8mq_evk.env
+diff --git a/board/nxp/imx8mq_evk/imx8mq_evk.env b/board/nxp/imx8mq_evk/imx8mq_evk.env
 index e15b9e0cda8..b585b4c971f 100644
---- a/board/freescale/imx8mq_evk/imx8mq_evk.env
-+++ b/board/freescale/imx8mq_evk/imx8mq_evk.env
+--- a/board/nxp/imx8mq_evk/imx8mq_evk.env
++++ b/board/nxp/imx8mq_evk/imx8mq_evk.env
 @@ -44,12 +44,12 @@ sr_ir_v2_cmd=cp.b ${fdtcontroladdr} ${fdt_addr_r} 0x10000;
  	for i in ${nodes}; do fdt rm ${i}; done
  
