@@ -754,6 +754,18 @@
 	};
 };
 
+&vpu_g1 {
+	status = "okay";
+};
+
+&vpu_g2 {
+	status = "okay";
+};
+
+&vpu_blk_ctrl {
+	status = "okay";
+};
+
 &irqsteer {
 	status = "okay";
 };
