@@ -9,19 +9,19 @@ Upstream-Status: Inappropriate [other]
 Signed-off-by: Mikhail Tsukerman <mikhail.tsukerman@advantech.com>
 
 ---
- include/configs/imx95_evk.h | 13 ++++++-------
- 1 file changed, 6 insertions(+), 7 deletions(-)
+ include/configs/imx95_evk.h | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
 diff --git a/include/configs/imx95_evk.h b/include/configs/imx95_evk.h
-index 76ed51534c6..e4da6455e0e 100644
+index 2de348a1a76..6c5f320767f 100644
 --- a/include/configs/imx95_evk.h
 +++ b/include/configs/imx95_evk.h
-@@ -10,19 +10,18 @@
+@@ -10,18 +10,18 @@
  #include <linux/stringify.h>
  #include <asm/arch/imx-regs.h>
  
-+#define CFG_HAS_ETH1 1
-+#define CFG_HAS_ETH2 1
++#define CFG_HAS_ETH1	1
++#define CFG_HAS_ETH2	1
 +
  #define CFG_SYS_INIT_RAM_ADDR	0x90000000
  #define CFG_SYS_INIT_RAM_SIZE	0x200000
@@ -31,17 +31,17 @@ index 76ed51534c6..e4da6455e0e 100644
  
 -#define PHYS_SDRAM_SIZE			0x70000000 /* 2GB - 256MB DDR */
 -#ifdef CONFIG_TARGET_IMX95_15X15_EVK
--#define PHYS_SDRAM_2_SIZE 		0x180000000UL /* 6GB */
+-#define PHYS_SDRAM_2_SIZE		0x180000000 /* 6GB (Totally 8GB) */
 -#else
--#define PHYS_SDRAM_2_SIZE		0x380000000 /* 14GB */
+-#define PHYS_SDRAM_2_SIZE		0x380000000 /* 14GB (Totally 16GB) */
 -#endif
--
 +/* Totally 8GB */
-+#define PHYS_SDRAM_SIZE			0x70000000UL /* 2GB  - 256MB DDR */
++#define PHYS_SDRAM_SIZE			0x70000000UL /* 2GB - 256MB DDR */
 +#define PHYS_SDRAM_2_SIZE		0x180000000UL /* 6GB */
+ 
  #define CFG_SYS_SECURE_SDRAM_BASE	0x8A000000 /* Secure DDR region for A55, SPL could use first 2MB */
  #define CFG_SYS_SECURE_SDRAM_SIZE	0x06000000
- 
 -- 
 2.43.0
+
 

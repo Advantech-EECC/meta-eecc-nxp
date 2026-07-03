@@ -9,12 +9,16 @@ Observation: ad hoc patch
 Upstream-Status: Inappropriate [other]
 Signed-off-by: F. Aragon <francisco.aragon@advantech.de>
 
-diff --git a/arch/arm/dts/imx8ulp-evk.dts b/arch/arm/dts/imx8ulp-evk.dts
-index eff4926c36..bba5d5f03d 100644
---- a/arch/arm/dts/imx8ulp-evk.dts
-+++ b/arch/arm/dts/imx8ulp-evk.dts
-@@ -63,23 +63,6 @@
- 	};
+---
+ .../src/arm64/freescale/imx8ulp-evk.dts       | 84 +++++++++++--------
+ 1 file changed, 50 insertions(+), 34 deletions(-)
+
+diff --git a/dts/upstream/src/arm64/freescale/imx8ulp-evk.dts b/dts/upstream/src/arm64/freescale/imx8ulp-evk.dts
+index 290a49bea2f..81f92bcf585 100644
+--- a/dts/upstream/src/arm64/freescale/imx8ulp-evk.dts
++++ b/dts/upstream/src/arm64/freescale/imx8ulp-evk.dts
+@@ -131,21 +131,6 @@
+ 	status = "okay";
  };
  
 -&flexspi2 {
@@ -24,10 +28,8 @@ index eff4926c36..bba5d5f03d 100644
 -	status = "okay";
 -
 -	mx25uw51345gxdi00: flash@0 {
--		reg = <0>;
--		#address-cells = <1>;
--		#size-cells = <1>;
 -		compatible = "jedec,spi-nor";
+-		reg = <0>;
 -		spi-max-frequency = <200000000>;
 -		spi-tx-bus-width = <8>;
 -		spi-rx-bus-width = <8>;
@@ -37,7 +39,7 @@ index eff4926c36..bba5d5f03d 100644
  &lpuart5 {
  	/* console */
  	pinctrl-names = "default", "sleep";
-@@ -206,27 +189,10 @@
+@@ -306,27 +291,10 @@
  		>;
  	};
  
@@ -62,12 +64,12 @@ index eff4926c36..bba5d5f03d 100644
  		fsl,pins = <
 -			MX8ULP_PAD_PTF14__LPUART5_TX	0x3
 -			MX8ULP_PAD_PTF15__LPUART5_RX	0x3
-+			MX8ULP_PAD_PTE6__LPUART5_TX 0x1
-+			MX8ULP_PAD_PTE7__LPUART5_RX 0x1
++			MX8ULP_PAD_PTE6__LPUART5_TX	0x1
++			MX8ULP_PAD_PTE7__LPUART5_RX	0x1
  		>;
  	};
  
-@@ -266,18 +232,40 @@
+@@ -393,4 +361,52 @@
  			MX8ULP_PAD_PTD11__SDHC0_DQS	0x10002
  		>;
  	};
@@ -85,19 +87,18 @@ index eff4926c36..bba5d5f03d 100644
 +			MX8ULP_PAD_PTF28__SDHC2_CD	0x3
 +		>;
 +	};
- };
- 
- &flexspi0 {
- 	status = "okay";
- 
--	flash0: atxp032@0 {
++};
++
++&flexspi0 {
++	status = "okay";
++
 +	flash0: w25q64jwiq@0 {
- 		reg = <0>;
- 		#address-cells = <1>;
- 		#size-cells = <1>;
- 		compatible = "jedec,spi-nor";
- 		spi-max-frequency = <66000000>;
- 	};
++		reg = <0>;
++		#address-cells = <1>;
++		#size-cells = <1>;
++		compatible = "jedec,spi-nor";
++		spi-max-frequency = <66000000>;
++	};
 +
 +	flash1: w25q64jwiq@1 {
 +		reg = <1>;
@@ -106,13 +107,7 @@ index eff4926c36..bba5d5f03d 100644
 +		compatible = "jedec,spi-nor";
 +		spi-max-frequency = <66000000>;
 +	};
- };
- 
- &dsi {
-@@ -318,3 +306,19 @@
- &dphy {
- 	status = "okay";
- };
++};
 +
 +&usdhc2 {
 +	assigned-clocks = <&pcc4 IMX8ULP_CLK_USDHC2>;
@@ -126,6 +121,7 @@ index eff4926c36..bba5d5f03d 100644
 +	bus-width = <4>;
 +	keep-power-in-suspend;
 +	status = "okay";
-+};
-+
-+
+ };
+-- 
+2.43.0
+
