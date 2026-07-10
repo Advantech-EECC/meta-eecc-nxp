@@ -253,25 +253,23 @@ AOM-5521 (on SOM-DB2510 carrier board)
 
 |Device |Status|Comment|
 |-------|------|-------|
-|USDHC1 | ⚠️ | eMMC 5.1 (not tested) |
-|USDHC2 | ⚠️ | SD Card (not tested) |
-|ETH0 | ⚠️ | Ethernet (not tested) |
-|ETH1 | ⚠️ | Ethernet with TSN (not tested) |
-|USB1| ⚠️ | USB 3.2 Gen1 (not tested) |
-|USB2| ⚠️ | USB 2.0 (not tested) |
-|LPUART1 | ⚠️ | Console (not tested) |
-|I2C | ⚠️ | Not tested |
-|CAN-FD| ⚠️ | Not tested |
+|USDHC1 | ✅ | eMMC 5.1 (automated test pass) |
+|USDHC2 | ✅ | SD Card (automated test pass) |
+|ETH0 | ✅ | Ethernet (automated test pass) |
+|ETH1 | ✅ | Ethernet with TSN (automated test pass) |
+|USB1| ❌ | USB 3.2 Gen1 (automated test errors found) |
+|USB2| ❌ | USB 2.0 (automated test errors found) |
+|LPUART1 | ✅⚠️ | Console available; automated UART category has errors |
+|I2C | ✅ | Automated test pass |
+|CAN-FD| ✅ | Automated test pass |
 |GPIO| ⚠️ | Not tested |
-|NPU| ⚠️ | 2 TOPS NPU (not tested) |
-|GPU| ⚠️ | Mali-G310 (not tested) |
+|NPU| ✅ | 2 TOPS NPU (automated test pass) |
+|GPU| ❌ | Mali-G310 (automated test errors found) |
 |VPU| ⚠️ | 4K video processing (not tested) |
 |HDMI| ⚠️ | Not tested |
 |MIPI-DSI| ⚠️ | 4-lane (not tested) |
 |LVDS| ⚠️ | Dual-channel (not tested) |
-|PCIe| ⚠️ | 2x Gen 3.0 (not tested) |
+|PCIe| ✅ | 2x Gen 3.0 (automated test pass) |
 |M.2| ⚠️ | Not tested |
 |mini PCIe| ⚠️ | Not tested |
 |Secure Boot | ⚠️ | Not tested |
-
-Note: This is preliminary support for AOM-5521. All features require testing and validation.
