@@ -11,20 +11,23 @@ Supported Boards
 
 The following boards are supported by this layer:
 
- * ROM-2620 (`rom2620-ed91` NXP i.MX 8ULP)
- * ROM-2820 (`rom2820-ed93` NXP i.MX 93)
- * ROM-5722 (`rom5722-db2510` NXP i.MX 8M Plus)
- * RSB-3720 (`rsb3720` NXP i.MX 8M Plus)
+ * ROM-2620-CD-A1 1GB (MACHINE=`rom2620-ed91` NXP i.MX 8ULP)
+ * ROM-2820-CD-A1 2GB (`rom2820-ed93` NXP i.MX 93)
+ * ROM-5722-CQ-A1 6GB (`rom5722-db2510` NXP i.MX 8M Plus)
+ * RSB-3720-CD/CQ-A1/A2 6GB A1,A2 (`rsb3720` `rsb3720-6g` NXP i.MX 8M Plus)
+ * RSB-3720-CD/CQ-A2 4GB A2 (`rsb3720-4g` NXP i.MX 8M Plus)
 
 Preliminary support:
 
- * ROM-5720 (`rom5720-db5901` NXP i.MX 8M)
- * ROM-5721 (`rom5721-db5901` NXP i.MX 8M Mini)
+ * AOM-5521 8GB (MACHINE=`aom5521-db2510` NXP i.MX 95)
+ * ROM-5620-WU-A1/A2 2GB (`rom5620-db5901` NXP i.MX 8QuadXPlus)
+ * ROM-5720-CD/CQ-A2 2GB (`rom5720-db5901` NXP i.MX 8M)
+ * ROM-5721-CD-A1/A2 1GB (`rom5721-db5901-1g` NXP i.MX 8M Mini)
+ * ROM-5721-CQ-A1/A2 2GB (`rom5721-db5901-2g` NXP i.MX 8M Mini)
 
 
 Supported Linux Features
 ========
-
 
 ROM-2620 (on ROM-ED91 carrier board)
 --------
@@ -54,6 +57,7 @@ ROM-2620 (on ROM-ED91 carrier board)
 |GPIO A,B,C| ❌ | Need to be accessed from M33 |
 |RTC | ✅ | Internal RTC, supports timer wake events |
 |Watchdog | ✅ | Internal watchdog |
+|Secure Boot AHAB | ❌ | Not tested |
 
 ROM-2820 (on ROM-ED93 carrier board)
 --------
@@ -64,9 +68,9 @@ ROM-2820 (on ROM-ED93 carrier board)
 |SDHC2 |  ✅  | SD Card |
 |ETH0 |  ✅  | 1Gbps |
 |ETH1 |  ✅  | 1Gbps |
-|USB1-1| ❌ | USB 2.0 (broken in Y5.1, we're checking it) |
-|USB1-2| ❌ | USB 2.0 (") |
-|USB-OTG | ⚠️  | Not tested (micro-USB connector) |
+|USB1-1| ✅ | USB 2.0 |
+|USB1-2| ✅ | USB 2.0 |
+|USB-OTG | ❌ |  |
 |MIPI-LVDS| ✅ | Tested with IDK-1107WR |
 |MIPI-DSI| ✅⚠️ | Not tested |
 |LPUART1 | ✅ | COM-E Linux Console |
@@ -79,10 +83,8 @@ ROM-2820 (on ROM-ED93 carrier board)
 |LPI2C2 | ✅ |  |
 |LPI2C4 | ✅ |  |
 |LPI2C7 | ✅ |  |
-|PWM0 | ⚠️ | Not tested |
-|PWM1 | ❌ |  |
+|PWM0 | ⚠️ | Not tested | |PWM1 | ❌ |  |
 |LPSPI3| ⚠️ | Not tested |
-|NPU| ⚠️ | Not tested |
 |NPU| ⚠️ | Not tested (i.MX 93 has built-in an Ethos™-U65 NPU) |
 |CAN0| ✅ |  |
 |CAN1| ✅ |  |
@@ -90,7 +92,43 @@ ROM-2820 (on ROM-ED93 carrier board)
 |RTC0 | ✅ | External I2C RTC (rx8900) |
 |RTC1 | ✅ | Internal RTC, supports timer wake events |
 |Watchdog | ✅ | Internal watchdog |
+|Secure Boot AHAB | ❌ | Not tested |
 
+ROM-5620 (on SOM-DB5901 carrier board)
+--------
+
+|Device |Status|Comment|
+|-------|------|-------|
+|SDHC0 |  ✅ | eMMC |
+|SDHC2 |  ✅ | SD Card |
+|ETH0 |  ✅ | 1Gbps |
+|ETH1 |  ✅ | 1Gbps |
+|USB1 | ❌ | USB 3.0 |
+|USB2 | ❌ | USB 2.0 |
+|USB3 | ❌ | USB-C |
+|USB-OTG | ❌ |  |
+|HDMI |  ❌ |  |
+|MIPI-LVDS | ❌ | (DSI to LVDS bridge) |
+|UART1| ✅ | COM3 Linux Console (2-wire) |
+|UART2| ⚠️  | Not tested - COM2 (2-wire) |
+|UART3| ⚠️  | Not tested - COM0 (4-wire) |
+|UART4| ⚠️  | Not tested - COM1 (2-wire) |
+|I2C1 | ✅  |  |
+|I2C2 | ✅  |  |
+|I2C3 | ✅  |  |
+|I2C4 | ✅  |  |
+|M.2 | ❌  |  |
+|PWM1 | ❌ |  |
+|PWM2 | ❌ |  |
+|PWM3 | ❌ |  |
+|PWM4 | ❌ |  |
+|QSPI0| ⚠️ | Not tested - n25q256a (jedec,spi-nor) |
+|GPIO | ⚠️ | Not tested |
+|RTC0 | ⚠️ | External I2C RTC (rx8900) |
+|RTC1 | ⚠️  | Internal RTC, supports timer wake events |
+|TPM | ❌ | |
+|Watchdog | ❌ | External I2C Advantech watchdog (MSP430-based) |
+|Secure Boot | ✅ | Tested (AHAB ecc256-CA-sha256 + SHA512 SRK certificate table hash) |
 
 ROM-5720 (on SOM-DB5901 carrier board)
 --------
@@ -129,6 +167,7 @@ MQ: preliminary support, issues with suspend to RAM, external watchdog
 |RTC1 | ✅ | Internal RTC, supports timer wake events |
 |TPM | ❌ | (st33htpm-i2c not yet upstreamed to tpm_tis_i2c.c) |
 |Watchdog | ✅ | External I2C Advantech watchdog (MSP430-based) |
+|Secure Boot HABv4 | ⚠️ | Not tested, likely to work (similar to ROM-5721) |
 
 
 ROM-5721 (on SOM-DB5901 carrier board)
@@ -141,11 +180,11 @@ CQ: preliminary support
 |SDHC0 |  ✅ | eMMC |
 |SDHC2 |  ✅ | SD Card |
 |ETH |  ✅ | 1Gbps |
-|USB1 | ❌ | Pending |
-|USB2 | ❌ | Pending |
-|USB3 | ❌ | Pending |
+|USB1 | ⚠️ | Not tested |
+|USB2 | ⚠️ | Not tested |
+|USB3 | ⚠️ | Not tested |
 |USB-OTG | ❌ |  |
-|MIPI-LVDS | ❌ | (DSI to LVDS bridge) |
+|MIPI-LVDS | ✅ | AUO G070 and G215 |
 |UART1| ✅ | COM3 Linux Console (2-wire) |
 |UART2| ⚠️ | M.2 (4-wire) - Not tested |
 |UART3| ❌ | Pending |
@@ -158,11 +197,16 @@ CQ: preliminary support
 |PWM1 | ❌ | |
 |PWM2 | ❌ | |
 |PWM3 | ❌ | |
-|PWM4 | ❌ | |
+|PWM4 | ✅ | LVDS backlight |
 |QSPI0| ✅ | n25q256a (jedec,spi-nor) |
 |GPIO | ⚠️ | Not tested |
 |RTC | ✅ | Internal RTC, supports timer wake events |
-|Watchdog | ✅ | Internal watchdog |
+|RTC0 | ✅ | External I2C RTC (S35390) |
+|RTC1 | ✅ | Internal RTC, supports timer wake events |
+|TPM | ⚠️  | Not tested (st33htpm-i2c) |
+|Watchdog0 | ✅ | Internal watchdog |
+|Watchdog1 | ✅ | External I2C Advantech watchdog (MSP430-based) |
+|Secure Boot HABv4 | ✅ | Tested (full chain of trust + locked boot loader) |
 
 ROM-5722 (on SOM-DB2510 carrier board)
 --------
@@ -200,9 +244,7 @@ ROM-5722 (on SOM-DB2510 carrier board)
 |RTC1 | ✅ | Internal RTC, supports timer wake events |
 |Watchdog0 | ✅ | Internal watchdog |
 |Watchdog1 | ✅ | External I2C Advantech watchdog (MSP430-based) |
-
-Additional limitations for this module + carrier:
-- Suspend to RAM wakes up immediately
+|Secure Boot HABv4 | ⚠️ | Not tested, likely to work (similar to ROM-5721) |
 
 
 RSB-3720
@@ -239,3 +281,32 @@ RSB-3720
 |RTC1 | ✅ | Internal RTC, supports timer wake events |
 |Watchdog0 | ✅ | Internal watchdog |
 |Watchdog1 | ✅ | External I2C Advantech watchdog (MSP430-based) |
+|Secure Boot HABv4 | ⚠️ | Not tested, likely to work (similar to ROM-5721) |
+
+AOM-5521 (on SOM-DB2510 carrier board)
+--------
+
+|Device |Status|Comment|
+|-------|------|-------|
+|USDHC1 | ⚠️ | eMMC 5.1 (not tested) |
+|USDHC2 | ⚠️ | SD Card (not tested) |
+|ETH0 | ⚠️ | Ethernet (not tested) |
+|ETH1 | ⚠️ | Ethernet with TSN (not tested) |
+|USB1| ⚠️ | USB 3.2 Gen1 (not tested) |
+|USB2| ⚠️ | USB 2.0 (not tested) |
+|LPUART1 | ⚠️ | Console (not tested) |
+|I2C | ⚠️ | Not tested |
+|CAN-FD| ⚠️ | Not tested |
+|GPIO| ⚠️ | Not tested |
+|NPU| ⚠️ | 2 TOPS NPU (not tested) |
+|GPU| ⚠️ | Mali-G310 (not tested) |
+|VPU| ⚠️ | 4K video processing (not tested) |
+|HDMI| ⚠️ | Not tested |
+|MIPI-DSI| ⚠️ | 4-lane (not tested) |
+|LVDS| ⚠️ | Dual-channel (not tested) |
+|PCIe| ⚠️ | 2x Gen 3.0 (not tested) |
+|M.2| ⚠️ | Not tested |
+|mini PCIe| ⚠️ | Not tested |
+|Secure Boot | ⚠️ | Not tested |
+
+Note: This is preliminary support for AOM-5521. All features require testing and validation.
