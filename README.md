@@ -20,6 +20,7 @@ The following boards are supported by this layer:
 
 Preliminary support:
 
+ * ROM-5620-WU-A1/A2 2GB (`rom5620-db5901` NXP i.MX 8QuadXPlus)
  * ROM-5720-CD/CQ-A2 2GB (`rom5720-db5901` NXP i.MX 8M)
  * ROM-5721-CD-A1/A2 1GB (`rom5721-db5901-1g` NXP i.MX 8M Mini)
  * ROM-5721-CQ-A1/A2 2GB (`rom5721-db5901-2g` NXP i.MX 8M Mini)
@@ -56,7 +57,7 @@ ROM-2620 (on ROM-ED91 carrier board)
 |GPIO A,B,C| ❌ | Need to be accessed from M33 |
 |RTC | ✅ | Internal RTC, supports timer wake events |
 |Watchdog | ✅ | Internal watchdog |
-|Secure Boot AHAB | ❌ | Not tested |
+|Secure Boot AHAB | ✅ |  |
 
 ROM-2820 (on ROM-ED93 carrier board)
 --------
@@ -92,8 +93,43 @@ ROM-2820 (on ROM-ED93 carrier board)
 |RTC0 | ✅ | External I2C RTC (rx8900) |
 |RTC1 | ✅ | Internal RTC, supports timer wake events |
 |Watchdog | ✅ | Internal watchdog |
-|Secure Boot AHAB | ❌ | Not tested |
+|Secure Boot AHAB | ✅ |  |
 
+ROM-5620 (on SOM-DB5901 carrier board)
+--------
+
+|Device |Status|Comment|
+|-------|------|-------|
+|SDHC0 |  ✅ | eMMC |
+|SDHC2 |  ✅ | SD Card |
+|ETH0 |  ✅ | 1Gbps |
+|ETH1 |  ✅ | 1Gbps |
+|USB1 | ❌ | USB 3.0 |
+|USB2 | ❌ | USB 2.0 |
+|USB3 | ❌ | USB-C |
+|USB-OTG | ❌ |  |
+|HDMI |  ❌ |  |
+|MIPI-LVDS | ❌ | (DSI to LVDS bridge) |
+|UART1| ✅ | COM3 Linux Console (2-wire) |
+|UART2| ⚠️  | Not tested - COM2 (2-wire) |
+|UART3| ⚠️  | Not tested - COM0 (4-wire) |
+|UART4| ⚠️  | Not tested - COM1 (2-wire) |
+|I2C1 | ✅  |  |
+|I2C2 | ✅  |  |
+|I2C3 | ✅  |  |
+|I2C4 | ✅  |  |
+|M.2 | ❌  | |
+|PWM1 | ❌ |  |
+|PWM2 | ❌ |  |
+|PWM3 | ❌ |  |
+|PWM4 | ❌ |  |
+|QSPI0| ⚠️  | Not tested - n25q256a (jedec,spi-nor) |
+|GPIO | ⚠️  | Driver loaded OK (i2c-3 0x70) - Not tested |
+|RTC0 | ✅ | External I2C RTC (rx8900) |
+|RTC1 | ✅  | Internal RTC, supports timer wake events |
+|TPM | ❌ | Device listed, but driver not loaded (i2c-4 0x2e) |
+|Watchdog | ✅ | External I2C Advantech watchdog (MSP430-based) |
+|Secure Boot | ✅ | Tested with AHAB ecc256-CA-sha256 + SHA512 SRK certificate table hash, without SGK certificate, i.e. signing with the SRK (SPSDK limitation in meta-secure-boot for Yocto >= 5.2) |
 
 ROM-5720 (on SOM-DB5901 carrier board)
 --------
