@@ -1,0 +1,43 @@
+From 0f6e15c30ca8447f0e15b63f92ab80612b5c60bd Mon Sep 17 00:00:00 2001
+From: Mikhail Tsukerman <miketsukerman@gmail.com>
+Date: Tue, 14 Jul 2026 20:47:55 +0200
+Subject: [PATCH] aom5521a1: update imx95_evk.h
+
+Upstream-Status: Inappropriate
+---
+ include/configs/imx95_evk.h | 11 +++++------
+ 1 file changed, 5 insertions(+), 6 deletions(-)
+
+diff --git a/include/configs/imx95_evk.h b/include/configs/imx95_evk.h
+index cd84ccd4ad3..8d1ef82feb4 100644
+--- a/include/configs/imx95_evk.h
++++ b/include/configs/imx95_evk.h
+@@ -11,6 +11,9 @@
+ #include <asm/arch/imx-regs.h>
+ #include "imx_env.h"
+ 
++#define CFG_HAS_ETH1 1
++#define CFG_HAS_ETH2 1
++
+ #define CFG_SYS_UBOOT_BASE	\
+ 	(QSPI0_AMBA_BASE + CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR * 512)
+ 
+@@ -208,13 +211,9 @@
+ 
+ #define CFG_SYS_SDRAM_BASE           0x90000000
+ #define PHYS_SDRAM                      0x90000000
+-/* Totally 16GB */
++/* Totally 8GB */
+ #define PHYS_SDRAM_SIZE			0x70000000UL /* 2GB  - 256MB DDR */
+-#ifdef CONFIG_TARGET_IMX95_15X15_EVK
+-#define PHYS_SDRAM_2_SIZE 		0x180000000UL /* 4GB temp workaround, should be 8GB */
+-#else
+-#define PHYS_SDRAM_2_SIZE 		0x380000000UL /* 14GB */
+-#endif
++#define PHYS_SDRAM_2_SIZE 		0x180000000UL /* 6GB */
+ 
+ #define CFG_SYS_FSL_USDHC_NUM	2
+ 
+-- 
+2.43.0
+
