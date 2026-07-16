@@ -240,3 +240,30 @@ RSB-3720
 |RTC1 | ✅ | Internal RTC, supports timer wake events |
 |Watchdog0 | ✅ | Internal watchdog |
 |Watchdog1 | ✅ | External I2C Advantech watchdog (MSP430-based) |
+
+AOM-5521 (on SOM-DB2510 carrier board)
+--------
+
+|Device |Status|Comment|
+|-------|------|-------|
+|USDHC1 | ✅ | eMMC 5.1 tested (PASS) |
+|USDHC2 | ✅ | SD Card tested (PASS) |
+|ETH0 | ✅ | Ethernet tested (PASS) |
+|ETH1 | ✅ | Ethernet with TSN tested (PASS) |
+|USB1| ✅ | USB 3.2 Gen1 detected, plugged-device works |
+|USB2| ✅ | USB 2.0 detected, plugged-device works |
+|LPUART1 | ✅ | Console tested (PASS) |
+|I2C | ✅ | Automated tests OK |
+|CAN-FD| ✅⚠️ | Automated tests OK; external controller test is manual |
+|GPIO| ⚠️ | Not tested |
+|NPU| ✅ | 2 TOPS NPU tested (automated tests OK) |
+|GPU| ⚠️ | Mali-G310 present; DRI/KMS (card1), OpenGL ES, Wayland, Xwayland tests ERROR |
+|VPU| ⚠️ | 4K video processing (not tested) |
+|HDMI| ⚠️ | Not tested |
+|MIPI-DSI| ⚠️ | 4-lane (not tested) |
+|LVDS| ⚠️ | Dual-channel (not tested) |
+|PCIe| ✅ | 2x Gen 3.0 tested (automated tests OK) |
+|M.2| ⚠️ | Not tested |
+|mini PCIe| ⚠️ | Not tested |
+|Secure Boot | ⚠️ | Not tested |
+

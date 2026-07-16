@@ -1,0 +1,52 @@
+From 0a76a4b01868a10ccfc382f3e92bf68bd3fc8b4b Mon Sep 17 00:00:00 2001
+From: Mikhail Tsukerman <miketsukerman@gmail.com>
+Date: Wed, 15 Jul 2026 19:52:52 +0200
+Subject: [PATCH] Fix LEDS on DB2510
+
+---
+ drivers/net/phy/realtek.c | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
+
+diff --git a/drivers/net/phy/realtek.c b/drivers/net/phy/realtek.c
+index 79f2cecf8e2a0..e0f2e464352b9 100644
+--- a/drivers/net/phy/realtek.c
++++ b/drivers/net/phy/realtek.c
+@@ -85,6 +85,15 @@ struct rtl821x_priv {
+ 	struct clk *clk;
+ };
+ 
++static void rtl8211f_phy_fixup(struct phy_device *phydev)
++{
++	msleep(200);
++	phy_write(phydev, RTL821x_PAGE_SELECT, 0x0d04);
++	phy_write(phydev, 0x10, 0xa050);
++	phy_write(phydev, 0x11, 0x0000);
++	phy_write(phydev, RTL821x_PAGE_SELECT, 0x0000);
++}
++
+ static int rtl821x_read_page(struct phy_device *phydev)
+ {
+ 	return __phy_read(phydev, RTL821x_PAGE_SELECT);
+@@ -141,6 +150,9 @@ static int rtl821x_probe(struct phy_device *phydev)
+ 
+ 	phydev->priv = priv;
+ 
++	if (phydev->phy_id == 0x001cc916)
++		rtl8211f_phy_fixup(phydev);
++
+ 	return 0;
+ }
+ 
+@@ -369,6 +381,9 @@ static int rtl8211f_config_init(struct phy_device *phydev)
+ 		return ret;
+ 	}
+ 
++	if (phy_id == 0x001cc916)
++		rtl8211f_phy_fixup(phydev);
++
+ 	switch (phydev->interface) {
+ 	case PHY_INTERFACE_MODE_RGMII:
+ 		val_txdly = 0;
+-- 
+2.43.0
+
