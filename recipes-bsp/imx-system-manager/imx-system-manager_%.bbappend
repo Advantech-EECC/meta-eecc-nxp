@@ -1,6 +1,6 @@
-FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
-IMX_SYSTEM_MANAGER_SRC = "git://github.com/ADVANTECH-Corp/imx-sm.git;protocol=https"
-SRCBRANCH = "lf-6.12.20-2.0.0-imx95-aom5521a2"
-SRC_URI = "${IMX_SYSTEM_MANAGER_SRC};branch=${SRCBRANCH}"
-SRCREV = "${AUTOREV}"
+SRC_URI:append:aom5521a1-db2510 = " \
+                    file://0001-aom5521a1-initial-support-lf-6.12.49.patch \
+                    file://0002-Restore-i.MX95-A0-A1-Rev-A-silicon-support.patch \
+"

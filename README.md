@@ -19,7 +19,7 @@ The following boards are supported by this layer:
 
 Preliminary support:
 
- * AOM-5521 8GB (MACHINE=`aom5521-db2510` NXP i.MX 95)
+ * AOM-5521 8GB (MACHINE=`aom5521a1-db2510` NXP i.MX 95)
  * ROM-5720-CD/CQ-A2 2GB (`rom5720-db5901` NXP i.MX 8M)
  * ROM-5721-CD-A1/A2 1GB (`rom5721-db5901-1g` NXP i.MX 8M Mini)
  * ROM-5721-CQ-A1/A2 2GB (`rom5721-db5901-2g` NXP i.MX 8M Mini)

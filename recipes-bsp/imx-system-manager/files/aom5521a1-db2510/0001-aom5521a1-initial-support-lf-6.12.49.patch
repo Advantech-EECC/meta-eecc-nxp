@@ -1,0 +1,437 @@
+From 7c8b51377c78bbed37d725a08d9afe77e32d2285 Mon Sep 17 00:00:00 2001
+From: "Mikhail Tsukerman" <mikhail.tsukerman@advantech.com>
+Date: Thu, 16 Jul 2026 14:11:21 +0200
+Subject: [PATCH] aom5521a1: initial support
+Upstream-Status: Inappropriate
+---
+ boards/mcimx95evk/sm/brd_sm_handlers.c | 150 ++++++++++++++++++++++++-
+ configs/mx95evk.cfg                    |   8 +-
+ configs/mx95evk/config_bctrl.h         |  14 +--
+ configs/mx95evk/config_scmi.h          |  15 +--
+ configs/mx95evk/config_test.h          |   8 +-
+ configs/mx95evk/config_trdc.h          |   6 +-
+ 6 files changed, 168 insertions(+), 33 deletions(-)
+
+diff --git a/boards/mcimx95evk/sm/brd_sm_handlers.c b/boards/mcimx95evk/sm/brd_sm_handlers.c
+index a96f6ce..bfa1531 100755
+--- a/boards/mcimx95evk/sm/brd_sm_handlers.c
++++ b/boards/mcimx95evk/sm/brd_sm_handlers.c
+@@ -43,6 +43,7 @@
+ #include "dev_sm.h"
+ #include "fsl_lpi2c.h"
+ #include "fsl_rgpio.h"
++#include "pin_mux.h"
+ 
+ /* Local defines */
+ 
+@@ -89,6 +90,138 @@ uint32_t g_pmicFaultFlags = 0U;
+ 
+ static void BRD_SM_Pf09Handler(void);
+ 
++#if (BOARD_I2C_INSTANCE == 1U)
++#define BOARD_I2C_RGPIO              GPIO1
++#define BOARD_I2C_SDA_RGPIO_PIN      1U
++#define BOARD_I2C_SCL_RGPIO_PIN      0U
++#elif (BOARD_I2C_INSTANCE == 2U)
++#define BOARD_I2C_RGPIO              GPIO1
++#define BOARD_I2C_SDA_RGPIO_PIN      3U
++#define BOARD_I2C_SCL_RGPIO_PIN      2U
++#endif
++
++void BOARD_I2C_Recovery(void)
++{
++    static LPI2C_Type *const s_i2cBases[] = LPI2C_BASE_PTRS;
++    LPI2C_Type *base = s_i2cBases[BOARD_I2C_INSTANCE];
++    lpi2c_master_config_t lpi2cConfig = {0};
++    int i;
++    static uint32_t const s_i2cClks[] =
++    {
++        0U,
++        CLOCK_ROOT_LPI2C1,
++        CLOCK_ROOT_LPI2C2
++    };
++    uint32_t clockId = s_i2cClks[BOARD_I2C_INSTANCE];
++    uint32_t rate;
++
++    rgpio_pin_config_t output_config = {
++        kRGPIO_DigitalOutput,
++        0,
++    };
++    rgpio_pin_config_t input_config = {
++        kRGPIO_DigitalInput,
++        0,
++    };
++
++    LPI2C_MasterDeinit(base);
++
++#if (BOARD_I2C_INSTANCE == 1U)
++    IOMUXC_SetPinMux(IOMUXC_PAD_I2C1_SCL__GPIO1_IO_BIT0, 1U);
++    IOMUXC_SetPinConfig(IOMUXC_PAD_I2C1_SCL__GPIO1_IO_BIT0, IOMUXC_PAD_DSE(0xFU)
++        | IOMUXC_PAD_FSEL1(0x3U) | IOMUXC_PAD_PU(0x1U) | IOMUXC_PAD_OD(0x1U));
++
++    IOMUXC_SetPinMux(IOMUXC_PAD_I2C1_SDA__GPIO1_IO_BIT1, 1U);
++    IOMUXC_SetPinConfig(IOMUXC_PAD_I2C1_SDA__GPIO1_IO_BIT1, IOMUXC_PAD_DSE(0xFU)
++        | IOMUXC_PAD_FSEL1(0x3U) | IOMUXC_PAD_PU(0x1U) | IOMUXC_PAD_OD(0x1U));
++#elif (BOARD_I2C_INSTANCE == 2U)
++    IOMUXC_SetPinMux(IOMUXC_PAD_I2C2_SCL__GPIO1_IO_BIT2, 1U);
++    IOMUXC_SetPinConfig(IOMUXC_PAD_I2C2_SCL__GPIO1_IO_BIT2, IOMUXC_PAD_DSE(0xFU)
++        | IOMUXC_PAD_FSEL1(0x3U) | IOMUXC_PAD_PU(0x1U) | IOMUXC_PAD_OD(0x1U));
++
++    IOMUXC_SetPinMux(IOMUXC_PAD_I2C2_SDA__GPIO1_IO_BIT3, 1U);
++    IOMUXC_SetPinConfig(IOMUXC_PAD_I2C2_SDA__GPIO1_IO_BIT3, IOMUXC_PAD_DSE(0xFU)
++        | IOMUXC_PAD_FSEL1(0x3U) | IOMUXC_PAD_PU(0x1U) | IOMUXC_PAD_OD(0x1U));
++#endif
++
++    /* Set PCNS register value to 0x0 to prepare the RGPIO initialization */
++    BOARD_I2C_RGPIO->PCNS = 0x0;
++
++    /* SDA input */
++    RGPIO_PinInit(BOARD_I2C_RGPIO, BOARD_I2C_SDA_RGPIO_PIN, &input_config);
++
++    if ((RGPIO_PinRead(BOARD_I2C_RGPIO, BOARD_I2C_SDA_RGPIO_PIN) & 0x1) == 0)
++    {
++        printf("BOARD_I2C_INSTANCE: SDA is low, start I2C recovery.\r\n");
++
++        RGPIO_PinInit(BOARD_I2C_RGPIO, BOARD_I2C_SCL_RGPIO_PIN, &output_config);
++		RGPIO_WritePinOutput(BOARD_I2C_RGPIO, BOARD_I2C_SCL_RGPIO_PIN, 1);
++		SystemTimeDelay(10000);
++
++        for (i = 0; i < 9; i++)
++        {
++            RGPIO_WritePinOutput(BOARD_I2C_RGPIO, BOARD_I2C_SCL_RGPIO_PIN, 1);
++            SystemTimeDelay(5);
++            RGPIO_WritePinOutput(BOARD_I2C_RGPIO, BOARD_I2C_SCL_RGPIO_PIN, 0);
++            SystemTimeDelay(5);
++        }
++
++        /* 9th clock here, the slave should already
++            release the SDA, we can set SDA as high to
++            a NAK.*/
++        RGPIO_PinInit(BOARD_I2C_RGPIO, BOARD_I2C_SDA_RGPIO_PIN, &output_config);
++        RGPIO_WritePinOutput(BOARD_I2C_RGPIO, BOARD_I2C_SDA_RGPIO_PIN, 1);
++        SystemTimeDelay(1); /* Pull up SDA first */
++        RGPIO_WritePinOutput(BOARD_I2C_RGPIO, BOARD_I2C_SCL_RGPIO_PIN, 1);
++        SystemTimeDelay(5); /* plus pervious 1 us */
++        RGPIO_WritePinOutput(BOARD_I2C_RGPIO, BOARD_I2C_SCL_RGPIO_PIN, 0);
++        SystemTimeDelay(5);
++        RGPIO_WritePinOutput(BOARD_I2C_RGPIO, BOARD_I2C_SDA_RGPIO_PIN, 0);
++        SystemTimeDelay(5);
++        RGPIO_WritePinOutput(BOARD_I2C_RGPIO, BOARD_I2C_SCL_RGPIO_PIN, 1);
++        SystemTimeDelay(5);
++        /* Here: SCL is high, and SDA from low to high, it's a
++          * stop condition */
++        RGPIO_WritePinOutput(BOARD_I2C_RGPIO, BOARD_I2C_SDA_RGPIO_PIN, 1);
++        SystemTimeDelay(5);
++
++        RGPIO_PinInit(BOARD_I2C_RGPIO, BOARD_I2C_SDA_RGPIO_PIN, &input_config);
++        if ((RGPIO_PinRead(BOARD_I2C_RGPIO, BOARD_I2C_SDA_RGPIO_PIN) & 0x1) == 1)
++            printf("BOARD_I2C_INSTANCE: I2C recovery success.\r\n");
++        else
++            printf("BOARD_I2C_INSTANCE Recovery failed, I2C1 SDA still low!!!\n");
++    }
++
++#if (BOARD_I2C_INSTANCE == 1U)
++    /* Configure LPI2C 1 */
++    IOMUXC_SetPinMux(IOMUXC_PAD_I2C1_SCL__LPI2C1_SCL, 1U);
++    IOMUXC_SetPinConfig(IOMUXC_PAD_I2C1_SCL__LPI2C1_SCL, IOMUXC_PAD_DSE(0xFU)
++        | IOMUXC_PAD_FSEL1(0x3U) | IOMUXC_PAD_PU(0x1U) | IOMUXC_PAD_OD(0x1U));
++
++    IOMUXC_SetPinMux(IOMUXC_PAD_I2C1_SDA__LPI2C1_SDA, 1U);
++    IOMUXC_SetPinConfig(IOMUXC_PAD_I2C1_SDA__LPI2C1_SDA, IOMUXC_PAD_DSE(0xFU)
++        | IOMUXC_PAD_FSEL1(0x3U) | IOMUXC_PAD_PU(0x1U) | IOMUXC_PAD_OD(0x1U));
++#elif (BOARD_I2C_INSTANCE == 2U)
++    /* Configure LPI2C 2 */
++    IOMUXC_SetPinMux(IOMUXC_PAD_I2C2_SCL__LPI2C2_SCL, 1U);
++    IOMUXC_SetPinConfig(IOMUXC_PAD_I2C2_SCL__LPI2C2_SCL, IOMUXC_PAD_DSE(0xFU)
++        | IOMUXC_PAD_FSEL1(0x3U) | IOMUXC_PAD_PU(0x1U) | IOMUXC_PAD_OD(0x1U));
++
++    IOMUXC_SetPinMux(IOMUXC_PAD_I2C2_SDA__LPI2C2_SDA, 1U);
++    IOMUXC_SetPinConfig(IOMUXC_PAD_I2C2_SDA__LPI2C2_SDA, IOMUXC_PAD_DSE(0xFU)
++        | IOMUXC_PAD_FSEL1(0x3U) | IOMUXC_PAD_PU(0x1U) | IOMUXC_PAD_OD(0x1U));
++#endif
++
++    rate = (uint32_t) CCM_RootGetRate(clockId);
++
++    LPI2C_MasterGetDefaultConfig(&lpi2cConfig);
++
++    lpi2cConfig.baudRate_Hz = BOARD_I2C_BAUDRATE; //BOARD_I2C_BAUDRATE_GPIO;
++    lpi2cConfig.enableDoze = false;
++
++    LPI2C_MasterInit(base, &lpi2cConfig, rate);
++}
++
+ /*--------------------------------------------------------------------------*/
+ /* Init serial devices                                                      */
+ /*--------------------------------------------------------------------------*/
+@@ -96,6 +229,10 @@ int32_t BRD_SM_SerialDevicesInit(void)
+ {
+     int32_t status = SM_ERR_SUCCESS;
+     LPI2C_Type *const s_i2cBases[] = LPI2C_BASE_PTRS;
++
++    BOARD_I2C_Recovery();
++
++#if 0
+     pcal6408a_config_t pcal6408Config;
+ 
+     /* Fill in PCAL6408A dev */
+@@ -116,6 +253,7 @@ int32_t BRD_SM_SerialDevicesInit(void)
+             status = SM_ERR_HARDWARE_ERROR;
+         }
+     }
++#endif
+ 
+     if (status == SM_ERR_SUCCESS)
+     {
+@@ -306,11 +444,12 @@ int32_t BRD_SM_BusExpMaskSet(uint8_t val, uint8_t mask)
+ void GPIO1_0_IRQHandler(void)
+ {
+     uint32_t flags;
+-    uint8_t status, val;
++    //uint8_t status, val;
+ 
+     /* Get GPIO status */
+     flags = RGPIO_GetPinsInterruptFlags(GPIO1, kRGPIO_InterruptOutput0);
+ 
++#if 0
+     /* Get PCAL6408A status */
+     (void) PCAL6408A_IntStatusGet(&g_pcal6408aDev, &status);
+ 
+@@ -343,6 +482,15 @@ void GPIO1_0_IRQHandler(void)
+ 
+     /* Handle controls interrupts */
+     BRD_SM_ControlHandler(status, val);
++#else
++    /* Clear GPIO interrupts */
++    RGPIO_ClearPinsInterruptFlags(GPIO1, kRGPIO_InterruptOutput0, flags);
++
++    BRD_SM_Pf09Handler();
++
++    if (g_pca2131Used)
++        BRD_SM_BbmHandler();
++#endif
+ 
+     /* Adjust dynamic IRQ priority */
+     (void) DEV_SM_IrqPrioUpdate();
+diff --git a/configs/mx95evk.cfg b/configs/mx95evk.cfg
+index 9250d02..c3efcdf 100755
+--- a/configs/mx95evk.cfg
++++ b/configs/mx95evk.cfg
+@@ -389,14 +389,12 @@ SYS                       ALL
+ # Resources
+ 
+ M7P                 OWNER  # CPUs must be first
+-CAN_FD1             OWNER
+ FSB                 READONLY
+ IRQSTEER_M7         OWNER
+ LPIT1               OWNER
+ LPTMR1              OWNER
+ LPTMR2              OWNER
+ LPTPM1              OWNER
+-LPUART3             OWNER, test
+ MSGINTR1            OWNER
+ MSGINTR2            OWNER
+ MU5_A               OWNER
+@@ -411,9 +409,6 @@ WDOG5               OWNER
+ 
+ # Pins
+ 
+-PIN_GPIO_IO14       OWNER
+-PIN_GPIO_IO15       OWNER
+-
+ # Memory
+ 
+ M7MIX               DATA, begin=0x020380000, end=0x02047FFFF
+@@ -612,6 +607,7 @@ CAMERA5             OWNER
+ CAMERA6             OWNER
+ CAMERA7             OWNER
+ CAMERA8             OWNER
++CAN_FD1             OWNER
+ CAN_FD2             OWNER
+ CAN_FD3             OWNER
+ CAN_FD4             OWNER
+@@ -940,6 +936,8 @@ PIN_GPIO_IO10        OWNER
+ PIN_GPIO_IO11        OWNER
+ PIN_GPIO_IO12        OWNER
+ PIN_GPIO_IO13        OWNER
++PIN_GPIO_IO14        OWNER
++PIN_GPIO_IO15        OWNER
+ PIN_GPIO_IO16        OWNER
+ PIN_GPIO_IO17        OWNER
+ PIN_GPIO_IO18        OWNER
+diff --git a/configs/mx95evk/config_bctrl.h b/configs/mx95evk/config_bctrl.h
+index d6c3dc4..ba582d6 100755
+--- a/configs/mx95evk/config_bctrl.h
++++ b/configs/mx95evk/config_bctrl.h
+@@ -61,13 +61,13 @@
+ #define SM_BCTRL_A_CONFIG \
+     { \
+         SM_CFG_W1(0x00000008U), 0x00001804U, \
+-        SM_CFG_W1(0x0000000CU), 0x0000E56AU, \
+-        SM_CFG_W1(0x00000010U), 0x0000E56AU, \
+-        SM_CFG_W1(0x00000014U), 0x0000E56AU, \
+-        SM_CFG_W1(0x00000018U), 0x0000E56AU, \
+-        SM_CFG_W1(0x0000001CU), 0x0000E56AU, \
+-        SM_CFG_W1(0x00000020U), 0x0000E56AU, \
+-        SM_CFG_W1(0x00000024U), 0x00000291U, \
++        SM_CFG_W1(0x0000000CU), 0x0000E56BU, \
++        SM_CFG_W1(0x00000010U), 0x0000E56BU, \
++        SM_CFG_W1(0x00000014U), 0x0000E56BU, \
++        SM_CFG_W1(0x00000018U), 0x0000E56BU, \
++        SM_CFG_W1(0x0000001CU), 0x0000E56BU, \
++        SM_CFG_W1(0x00000020U), 0x0000E56BU, \
++        SM_CFG_W1(0x00000024U), 0x00000290U, \
+         SM_CFG_END \
+     }
+ 
+diff --git a/configs/mx95evk/config_scmi.h b/configs/mx95evk/config_scmi.h
+index 2c92123..8f0ca6f 100755
+--- a/configs/mx95evk/config_scmi.h
++++ b/configs/mx95evk/config_scmi.h
+@@ -66,10 +66,8 @@
+         .secure = 0U, \
+         .seenvId = 1U, \
+         .buttonPerms[DEV_SM_BUTTON_0] = SM_SCMI_PERM_NOTIFY, \
+-        .clkPerms[DEV_SM_CLK_CAN1] = SM_SCMI_PERM_ALL, \
+         .clkPerms[DEV_SM_CLK_LPTMR1] = SM_SCMI_PERM_ALL, \
+         .clkPerms[DEV_SM_CLK_LPTMR2] = SM_SCMI_PERM_ALL, \
+-        .clkPerms[DEV_SM_CLK_LPUART3] = SM_SCMI_PERM_ALL, \
+         .clkPerms[DEV_SM_CLK_M7SYSTICK] = SM_SCMI_PERM_ALL, \
+         .clkPerms[DEV_SM_CLK_TSTMR2] = SM_SCMI_PERM_ALL, \
+         .cpuPerms[DEV_SM_CPU_M7P] = SM_SCMI_PERM_ALL, \
+@@ -77,13 +75,9 @@
+         .ctrlPerms[BRD_SM_CTRL_PCA2131] = SM_SCMI_PERM_ALL, \
+         .ctrlPerms[BRD_SM_CTRL_TEST] = SM_SCMI_PERM_ALL, \
+         .ctrlPerms[BRD_SM_CTRL_TEST_A] = SM_SCMI_PERM_ALL, \
+-        .daisyPerms[DEV_SM_DAISY_CAN1_RX] = SM_SCMI_PERM_ALL, \
+         .daisyPerms[DEV_SM_DAISY_LPTMR2_0] = SM_SCMI_PERM_ALL, \
+         .daisyPerms[DEV_SM_DAISY_LPTMR2_1] = SM_SCMI_PERM_ALL, \
+         .daisyPerms[DEV_SM_DAISY_LPTMR2_2] = SM_SCMI_PERM_ALL, \
+-        .daisyPerms[DEV_SM_DAISY_LPUART3_CTS] = SM_SCMI_PERM_ALL, \
+-        .daisyPerms[DEV_SM_DAISY_LPUART3_RXD] = SM_SCMI_PERM_ALL, \
+-        .daisyPerms[DEV_SM_DAISY_LPUART3_TXD] = SM_SCMI_PERM_ALL, \
+         .faultPerms[DEV_SM_FAULT_M7_LOCKUP] = SM_SCMI_PERM_ALL, \
+         .faultPerms[DEV_SM_FAULT_M7_RESET] = SM_SCMI_PERM_ALL, \
+         .faultPerms[DEV_SM_FAULT_SW0] = SM_SCMI_PERM_ALL, \
+@@ -93,11 +87,7 @@
+         .lmmPerms[2] = SM_SCMI_PERM_ALL, \
+         .pdPerms[DEV_SM_PD_M7] = SM_SCMI_PERM_ALL, \
+         .perfPerms[DEV_SM_PERF_M7] = SM_SCMI_PERM_ALL, \
+-        .perlpiPerms[DEV_SM_PERLPI_CAN1] = SM_SCMI_PERM_ALL, \
+-        .perlpiPerms[DEV_SM_PERLPI_LPUART3] = SM_SCMI_PERM_ALL, \
+         .perlpiPerms[DEV_SM_PERLPI_WDOG5] = SM_SCMI_PERM_ALL, \
+-        .pinPerms[DEV_SM_PIN_GPIO_IO14] = SM_SCMI_PERM_ALL, \
+-        .pinPerms[DEV_SM_PIN_GPIO_IO15] = SM_SCMI_PERM_ALL, \
+         .rtcPerms[BRD_SM_RTC_PCA2131] = SM_SCMI_PERM_ALL, \
+         .rtcPerms[DEV_SM_RTC_BBNSM] = SM_SCMI_PERM_PRIV, \
+         .sensorPerms[BRD_SM_SENSOR_TEMP_PF09] = SM_SCMI_PERM_SET, \
+@@ -232,6 +222,7 @@
+         .clkPerms[DEV_SM_CLK_AUDIOPLL2] = SM_SCMI_PERM_ALL, \
+         .clkPerms[DEV_SM_CLK_AUDIOPLL2_VCO] = SM_SCMI_PERM_ALL, \
+         .clkPerms[DEV_SM_CLK_AUDIOXCVR] = SM_SCMI_PERM_ALL, \
++        .clkPerms[DEV_SM_CLK_CAN1] = SM_SCMI_PERM_ALL, \
+         .clkPerms[DEV_SM_CLK_CAN2] = SM_SCMI_PERM_ALL, \
+         .clkPerms[DEV_SM_CLK_CAN3] = SM_SCMI_PERM_ALL, \
+         .clkPerms[DEV_SM_CLK_CAN4] = SM_SCMI_PERM_ALL, \
+@@ -321,6 +312,7 @@
+         .ctrlPerms[DEV_SM_CTRL_SAI3_MCLK] = SM_SCMI_PERM_ALL, \
+         .ctrlPerms[DEV_SM_CTRL_SAI4_MCLK] = SM_SCMI_PERM_ALL, \
+         .ctrlPerms[DEV_SM_CTRL_SAI5_MCLK] = SM_SCMI_PERM_ALL, \
++        .daisyPerms[DEV_SM_DAISY_CAN1_RX] = SM_SCMI_PERM_ALL, \
+         .daisyPerms[DEV_SM_DAISY_CAN2_RX] = SM_SCMI_PERM_ALL, \
+         .daisyPerms[DEV_SM_DAISY_CAN3_RX] = SM_SCMI_PERM_ALL, \
+         .daisyPerms[DEV_SM_DAISY_CAN4_RX] = SM_SCMI_PERM_ALL, \
+@@ -461,6 +453,7 @@
+         .perfPerms[DEV_SM_PERF_GPU] = SM_SCMI_PERM_ALL, \
+         .perfPerms[DEV_SM_PERF_NPU] = SM_SCMI_PERM_ALL, \
+         .perfPerms[DEV_SM_PERF_VPU] = SM_SCMI_PERM_ALL, \
++        .perlpiPerms[DEV_SM_PERLPI_CAN1] = SM_SCMI_PERM_ALL, \
+         .perlpiPerms[DEV_SM_PERLPI_CAN2] = SM_SCMI_PERM_ALL, \
+         .perlpiPerms[DEV_SM_PERLPI_CAN3] = SM_SCMI_PERM_ALL, \
+         .perlpiPerms[DEV_SM_PERLPI_CAN4] = SM_SCMI_PERM_ALL, \
+@@ -527,6 +520,8 @@
+         .pinPerms[DEV_SM_PIN_GPIO_IO11] = SM_SCMI_PERM_ALL, \
+         .pinPerms[DEV_SM_PIN_GPIO_IO12] = SM_SCMI_PERM_ALL, \
+         .pinPerms[DEV_SM_PIN_GPIO_IO13] = SM_SCMI_PERM_ALL, \
++        .pinPerms[DEV_SM_PIN_GPIO_IO14] = SM_SCMI_PERM_ALL, \
++        .pinPerms[DEV_SM_PIN_GPIO_IO15] = SM_SCMI_PERM_ALL, \
+         .pinPerms[DEV_SM_PIN_GPIO_IO16] = SM_SCMI_PERM_ALL, \
+         .pinPerms[DEV_SM_PIN_GPIO_IO17] = SM_SCMI_PERM_ALL, \
+         .pinPerms[DEV_SM_PIN_GPIO_IO18] = SM_SCMI_PERM_ALL, \
+diff --git a/configs/mx95evk/config_test.h b/configs/mx95evk/config_test.h
+index 73bac41..f87f1ce 100755
+--- a/configs/mx95evk/config_test.h
++++ b/configs/mx95evk/config_test.h
+@@ -143,12 +143,12 @@
+ /*--------------------------------------------------------------------------*/
+ 
+ /*! Config for number of tests */
+-#define SM_SCMI_NUM_TEST  41U
++#define SM_SCMI_NUM_TEST  35U
+ 
+ /*! Config data array for tests */
+ #define SM_SCMI_TEST_CONFIG_DATA \
+     {.testId = TEST_BUTTON, .channel = 5U, .rsrc = DEV_SM_BUTTON_0}, \
+-    {.testId = TEST_CLK, .channel = 0U, .rsrc = DEV_SM_CLK_LPUART3}, \
++    {.testId = TEST_CLK, .channel = 5U, .rsrc = DEV_SM_CLK_DISPOCRAM}, \
+     {.testId = TEST_CLK, .channel = 5U, .rsrc = DEV_SM_CLK_ENETREF}, \
+     {.testId = TEST_CLK, .channel = 5U, .rsrc = DEV_SM_CLK_ENETTIMER1}, \
+     {.testId = TEST_CLK, .channel = 5U, .rsrc = DEV_SM_CLK_GPU_CGC}, \
+@@ -157,9 +157,6 @@
+     {.testId = TEST_CLK, .channel = 5U, .rsrc = DEV_SM_CLK_SAI1}, \
+     {.testId = TEST_CTRL, .channel = 5U, .rsrc = DEV_SM_CTRL_MQS1_SETTINGS}, \
+     {.testId = TEST_CTRL, .channel = 5U, .rsrc = DEV_SM_CTRL_SAI1_MCLK}, \
+-    {.testId = TEST_DAISY, .channel = 0U, .rsrc = DEV_SM_DAISY_LPUART3_CTS}, \
+-    {.testId = TEST_DAISY, .channel = 0U, .rsrc = DEV_SM_DAISY_LPUART3_RXD}, \
+-    {.testId = TEST_DAISY, .channel = 0U, .rsrc = DEV_SM_DAISY_LPUART3_TXD}, \
+     {.testId = TEST_DAISY, .channel = 5U, .rsrc = DEV_SM_DAISY_NETC_EMDC}, \
+     {.testId = TEST_DAISY, .channel = 5U, .rsrc = DEV_SM_DAISY_NETC_EMDIO}, \
+     {.testId = TEST_DAISY, .channel = 5U, .rsrc = DEV_SM_DAISY_NETC_ETH0_RMII_RX_ER}, \
+@@ -184,7 +181,6 @@
+     {.testId = TEST_PERF, .channel = 5U, .rsrc = DEV_SM_PERF_GPU}, \
+     {.testId = TEST_PERF, .channel = 5U, .rsrc = DEV_SM_PERF_NPU}, \
+     {.testId = TEST_PERF, .channel = 5U, .rsrc = DEV_SM_PERF_VPU}, \
+-    {.testId = TEST_PERLPI, .channel = 0U, .rsrc = DEV_SM_PERLPI_LPUART3}, \
+     {.testId = TEST_PERLPI, .channel = 5U, .rsrc = DEV_SM_PERLPI_LPUART8}, \
+     {.testId = TEST_PIN, .channel = 5U, .rsrc = DEV_SM_PIN_UART1_RXD}, \
+     {.testId = TEST_RTC, .channel = 5U, .rsrc = DEV_SM_RTC_BBNSM}
+diff --git a/configs/mx95evk/config_trdc.h b/configs/mx95evk/config_trdc.h
+index aa4118b..1c644a9 100755
+--- a/configs/mx95evk/config_trdc.h
++++ b/configs/mx95evk/config_trdc.h
+@@ -124,7 +124,7 @@
+         SM_CFG_W1(0x00010650U), 0x09000309U, \
+         SM_CFG_W1(0x00010654U), 0x0000C900U, \
+         SM_CFG_W1(0x00010658U), 0x99909900U, \
+-        SM_CFG_W1(0x0001065cU), 0x00009009U, \
++        SM_CFG_W1(0x0001065cU), 0x00009909U, \
+         SM_CFG_W1(0x00010668U), 0x00009900U, \
+         SM_CFG_W1(0x0001066cU), 0x90909000U, \
+         SM_CFG_W1(0x00010670U), 0x00009000U, \
+@@ -132,7 +132,6 @@
+         SM_CFG_Z1(0x00010850U), \
+         SM_CFG_W1(0x00010854U), 0x9000C000U, \
+         SM_CFG_W1(0x00010858U), 0x00000099U, \
+-        SM_CFG_W1(0x0001085cU), 0x00000900U, \
+         SM_CFG_W1(0x00010870U), 0x00000090U, \
+         SM_CFG_W1(0x00010874U), 0x00000999U, \
+         SM_CFG_W1(0x00010980U), 0x900000C0U, \
+@@ -1185,7 +1184,6 @@
+         SM_CFG_W1(0x000107a8U), 0x00000009U, \
+         SM_CFG_W1(0x00010860U), 0x00090000U, \
+         SM_CFG_W1(0x00010864U), 0x00909009U, \
+-        SM_CFG_W1(0x00010868U), 0x90000000U, \
+         SM_CFG_W1(0x00010878U), 0x00090000U, \
+         SM_CFG_Z1(0x00010a60U), \
+         SM_CFG_Z1(0x00010c60U), \
+@@ -1202,7 +1200,7 @@
+         SM_CFG_W1(0x0001125cU), 0x99999999U, \
+         SM_CFG_W1(0x00011260U), 0x99999999U, \
+         SM_CFG_W1(0x00011264U), 0x99999999U, \
+-        SM_CFG_W1(0x00011268U), 0x99999999U, \
++        SM_CFG_W1(0x00011268U), 0x09999999U, \
+         SM_CFG_W1(0x0001126cU), 0x09999999U, \
+         SM_CFG_W1(0x00011270U), 0x99909999U, \
+         SM_CFG_W1(0x00011274U), 0x99999999U, \
+-- 
+2.43.0
+

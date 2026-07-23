@@ -1,5 +1,5 @@
 From 17930df59947bbc5e5e98afbc6767feefd5a513b Mon Sep 17 00:00:00 2001
-From: Mikhail Tsukerman <mikhail.tsukerman@advantech.de>
+From: "Mikhail Tsukerman" <mikhail.tsukerman@advantech.de>
 Date: Tue, 10 Feb 2026 15:39:20 +0100
 Subject: [PATCH] aom5521a1: update imx95_evk.h
 

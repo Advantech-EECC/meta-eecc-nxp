@@ -1,0 +1,436 @@
+From eacd1036e9d90bc9c8e76e423b2750e32c5c78bd Mon Sep 17 00:00:00 2001
+From: "Mikhail Tsukerman" <mikhail.tsukerman@advantech.com>
+Date: Thu, 16 Jul 2026 17:00:35 +0000
+Subject: [PATCH] Restore i.MX95 A0/A1 (Rev A) silicon support
+Upstream-Status: Inappropriate
+---
+ .gitignore                            |  1 +
+ devices/MIMX95/MIMX95_cm33_features.h |  4 ++
+ devices/MIMX95/drivers/fsl_power.c    | 36 ++++++++++++
+ devices/MIMX95/drivers/fsl_power.h    |  7 +++
+ devices/MIMX95/sm/dev_sm_clock.c      | 15 ++++-
+ devices/MIMX95/sm/dev_sm_config.c     | 84 +++++++++++++++------------
+ devices/MIMX95/sm/dev_sm_handlers.c   | 22 +++++++
+ devices/MIMX95/sm/dev_sm_power.c      | 46 +++++++++++----
+ devices/MIMX95/sm/dev_sm_sensor.c     |  9 ++-
+ devices/MIMX95/sm/dev_sm_system.c     | 42 ++++++++------
+ 10 files changed, 194 insertions(+), 72 deletions(-)
+ create mode 100644 .gitignore
+
+diff --git a/.gitignore b/.gitignore
+new file mode 100644
+index 0000000..567609b
+--- /dev/null
++++ b/.gitignore
+@@ -0,0 +1 @@
++build/
+diff --git a/devices/MIMX95/MIMX95_cm33_features.h b/devices/MIMX95/MIMX95_cm33_features.h
+index 58f6274..f253900 100755
+--- a/devices/MIMX95/MIMX95_cm33_features.h
++++ b/devices/MIMX95/MIMX95_cm33_features.h
+@@ -605,4 +605,8 @@
+ /* @brief Is affected by errata with ID 52127 (BLK_CTRL_NOC: default value requires access to sync) */
+ #define FSL_FEATURE_BLK_CTRL_NOC_HAS_ERRATA_52127 (1)
+ 
++/* LP_HANDSHAKE_SM module features */
++/* @brief Is affected by errata with ID 52232 (LP_HANDSHAKE_SM: handshake clock sync) */
++#define FSL_FEATURE_LP_HANDSHAKE_SM_HAS_ERRATA_52232 (1)
++
+ #endif /* _MIMX95_cm33_FEATURES_H_ */
+diff --git a/devices/MIMX95/drivers/fsl_power.c b/devices/MIMX95/drivers/fsl_power.c
+index 9b46266..8408bcf 100755
+--- a/devices/MIMX95/drivers/fsl_power.c
++++ b/devices/MIMX95/drivers/fsl_power.c
+@@ -32,6 +32,7 @@
+ #include "fsl_cpu.h"
+ #include "fsl_power.h"
+ #include "fsl_src.h"
++#include "fsl_ccm.h"
+ #include "fsl_clock.h"
+ #include "sm_test_mode.h"
+ 
+@@ -618,6 +619,41 @@ void PWR_LpHandshakeAck(void)
+         BLK_CTRL_S_AONMIX_SM_LP_HANDSHAKE_STATUS_ACK(0U);
+ }
+ 
++#if (defined(FSL_FEATURE_LP_HANDSHAKE_SM_HAS_ERRATA_52232) && FSL_FEATURE_LP_HANDSHAKE_SM_HAS_ERRATA_52232)
++/*--------------------------------------------------------------------------*/
++/* Acknowledge LP handshake                                                 */
++/*--------------------------------------------------------------------------*/
++void PWR_LpHandshakeAckRevA(void)
++{
++    /* Query clock root divider for LP_HANDSHAKE module */
++    uint32_t oldDiv;
++    bool rc = CCM_RootGetDiv(CLOCK_ROOT_M33, &oldDiv);
++
++    /* Increase clock root divider for LP_HANDSHAKE module during ACK */
++    if (rc)
++    {
++        rc = CCM_RootSetDiv(CLOCK_ROOT_M33, oldDiv << 2U);
++    }
++
++    BLK_CTRL_S_AONMIX->SM_LP_HANDSHAKE_STATUS =
++        BLK_CTRL_S_AONMIX_SM_LP_HANDSHAKE_STATUS_AUTOACK(0U) |
++        BLK_CTRL_S_AONMIX_SM_LP_HANDSHAKE_STATUS_ACK(1U);
++
++    /* Ack requires a pulse of 2-3 clocks @ 24MHz = 125ns */
++    SystemTimeDelay(1U);
++
++    BLK_CTRL_S_AONMIX->SM_LP_HANDSHAKE_STATUS =
++        BLK_CTRL_S_AONMIX_SM_LP_HANDSHAKE_STATUS_AUTOACK(0U) |
++        BLK_CTRL_S_AONMIX_SM_LP_HANDSHAKE_STATUS_ACK(0U);
++
++    /* Restore clock root divider for LP_HANDSHAKE module */
++    if (rc)
++    {
++        (void) CCM_RootSetDiv(CLOCK_ROOT_M33, oldDiv);
++    }
++}
++#endif
++
+ /*--------------------------------------------------------------------------*/
+ /* Configure MIX-level transaction blocking                                 */
+ /*--------------------------------------------------------------------------*/
+diff --git a/devices/MIMX95/drivers/fsl_power.h b/devices/MIMX95/drivers/fsl_power.h
+index 5591322..fd4ab32 100755
+--- a/devices/MIMX95/drivers/fsl_power.h
++++ b/devices/MIMX95/drivers/fsl_power.h
+@@ -338,6 +338,13 @@ void PWR_LpHandshakeModeGet(pwr_lp_hs_mode *lpHsMode);
+  */
+ void PWR_LpHandshakeAck(void);
+ 
++#if (defined(FSL_FEATURE_LP_HANDSHAKE_SM_HAS_ERRATA_52232) && FSL_FEATURE_LP_HANDSHAKE_SM_HAS_ERRATA_52232)
++/*!
++ * Acknowledge LP handshake for Rev A silicon
++ */
++void PWR_LpHandshakeAckRevA(void);
++#endif
++
+ /*!
+  * Configure MIX-level transaction blocking.
+  *
+diff --git a/devices/MIMX95/sm/dev_sm_clock.c b/devices/MIMX95/sm/dev_sm_clock.c
+index b054d97..3afebdf 100755
+--- a/devices/MIMX95/sm/dev_sm_clock.c
++++ b/devices/MIMX95/sm/dev_sm_clock.c
+@@ -990,9 +990,20 @@ int32_t DEV_SM_ClockEnable(uint32_t clockId, bool enable)
+ 
+                 if (clockIndex < CLOCK_NUM_CGC)
+                 {
+-                    if (!CLOCK_CgcSetEnable(clockIndex, enable))
++                    /* Skip MIX-level transaction blocking on Rev A  */
++                    if (DEV_SM_SiVerGet() < DEV_SM_SIVER_B0)
+                     {
+-                        status = SM_ERR_INVALID_PARAMETERS;
++                        if (!CCM_CgcSetEnable(clockIndex, enable))
++                        {
++                            status = SM_ERR_INVALID_PARAMETERS;
++                        }
++                    }
++                    else
++                    {
++                        if (!CLOCK_CgcSetEnable(clockIndex, enable))
++                        {
++                            status = SM_ERR_INVALID_PARAMETERS;
++                        }
+                     }
+                 }
+                 else
+diff --git a/devices/MIMX95/sm/dev_sm_config.c b/devices/MIMX95/sm/dev_sm_config.c
+index c96784d..b8b7ab1 100755
+--- a/devices/MIMX95/sm/dev_sm_config.c
++++ b/devices/MIMX95/sm/dev_sm_config.c
+@@ -406,21 +406,25 @@ int32_t DEV_SM_NocConfigLoad(void)
+     int32_t status;
+     static const uint32_t s_configData[] = SM_NOC_CONFIG;
+ 
+-    /* Deassert reset for WAKEUPMIX SMMU TBUs */
+-    SRC_XSPR_WAKEUPMIX->IRST_REQ_CTRL &=
+-        ~SRC_XSPR_IRST_REQ_CTRL_RSTR_0_IRST_1_MASK;
++    /* Rev A does not support SMMU TBU/TCU SW control  */
++    if (DEV_SM_SiVerGet() >= DEV_SM_SIVER_B0)
++    {
++        /* Deassert reset for WAKEUPMIX SMMU TBUs */
++        SRC_XSPR_WAKEUPMIX->IRST_REQ_CTRL &=
++            ~SRC_XSPR_IRST_REQ_CTRL_RSTR_0_IRST_1_MASK;
+ 
+-    /* Resume NOCMIX SMMU TCU operation */
+-    CCM_CTRL->LPCG[CLOCK_LPCG_NOCMIX_TCU].DIRECT |=
+-        CCM_LPCG_DIRECT_ON_MASK;
++        /* Resume NOCMIX SMMU TCU operation */
++        CCM_CTRL->LPCG[CLOCK_LPCG_NOCMIX_TCU].DIRECT |=
++            CCM_LPCG_DIRECT_ON_MASK;
+ 
+-    /* Resume NOCMIX SMMU TBU operation */
+-    CCM_CTRL->LPCG[CLOCK_LPCG_NOCMIX_TBU].DIRECT |=
+-        CCM_LPCG_DIRECT_ON_MASK;
++        /* Resume NOCMIX SMMU TBU operation */
++        CCM_CTRL->LPCG[CLOCK_LPCG_NOCMIX_TBU].DIRECT |=
++            CCM_LPCG_DIRECT_ON_MASK;
+ 
+-    /* Resume WAKEUPMIX TBU operation */
+-    CCM_CTRL->LPCG[CLOCK_LPCG_WAKEUPMIX_TBU].DIRECT |=
+-        CCM_LPCG_DIRECT_ON_MASK;
++        /* Resume WAKEUPMIX TBU operation */
++        CCM_CTRL->LPCG[CLOCK_LPCG_WAKEUPMIX_TBU].DIRECT |=
++            CCM_LPCG_DIRECT_ON_MASK;
++    }
+ 
+     /* Load TRDC N config */
+     status = DEV_SM_RdcLoad(DEV_SM_TRDC_N);
+@@ -845,38 +849,42 @@ int32_t DEV_SM_NocPowerDownPre(void)
+ {
+     int32_t status = SM_ERR_SUCCESS;
+ 
+-    /* Quiesce WAKEUPMIX SMMU TBUs */
+-    CCM_CTRL->LPCG[CLOCK_LPCG_WAKEUPMIX_TBU].DIRECT &=
+-        ~CCM_LPCG_DIRECT_ON_MASK;
+-
+-    while ((CCM_CTRL->LPCG[CLOCK_LPCG_WAKEUPMIX_TBU].STATUS0 &
+-        CCM_LPCG_STATUS0_ON_MASK) != 0U)
++    /* Rev A does not support SMMU TBU/TCU SW control  */
++    if (DEV_SM_SiVerGet() >= DEV_SM_SIVER_B0)
+     {
+-        ; /* Intentional empty while */
+-    }
++        /* Quiesce WAKEUPMIX SMMU TBUs */
++        CCM_CTRL->LPCG[CLOCK_LPCG_WAKEUPMIX_TBU].DIRECT &=
++            ~CCM_LPCG_DIRECT_ON_MASK;
+ 
+-    /* Reset WAKEUPMIX SMMU TBUs */
+-    SRC_XSPR_WAKEUPMIX->IRST_REQ_CTRL |=
+-        SRC_XSPR_IRST_REQ_CTRL_RSTR_0_IRST_1_MASK;
++        while ((CCM_CTRL->LPCG[CLOCK_LPCG_WAKEUPMIX_TBU].STATUS0 &
++            CCM_LPCG_STATUS0_ON_MASK) != 0U)
++        {
++            ; /* Intentional empty while */
++        }
+ 
+-    /* Quiesce NOCMIX SMMU TBUs */
+-    CCM_CTRL->LPCG[CLOCK_LPCG_NOCMIX_TBU].DIRECT &=
+-        ~CCM_LPCG_DIRECT_ON_MASK;
++        /* Reset WAKEUPMIX SMMU TBUs */
++        SRC_XSPR_WAKEUPMIX->IRST_REQ_CTRL |=
++            SRC_XSPR_IRST_REQ_CTRL_RSTR_0_IRST_1_MASK;
+ 
+-    while ((CCM_CTRL->LPCG[CLOCK_LPCG_NOCMIX_TBU].STATUS0 &
+-        CCM_LPCG_STATUS0_ON_MASK) != 0U)
+-    {
+-        ; /* Intentional empty while */
+-    }
++        /* Quiesce NOCMIX SMMU TBUs */
++        CCM_CTRL->LPCG[CLOCK_LPCG_NOCMIX_TBU].DIRECT &=
++            ~CCM_LPCG_DIRECT_ON_MASK;
+ 
+-    /* Quiesce WAKEUPMIX SMMU TCU */
+-    CCM_CTRL->LPCG[CLOCK_LPCG_NOCMIX_TCU].DIRECT &=
+-        ~CCM_LPCG_DIRECT_ON_MASK;
++        while ((CCM_CTRL->LPCG[CLOCK_LPCG_NOCMIX_TBU].STATUS0 &
++            CCM_LPCG_STATUS0_ON_MASK) != 0U)
++        {
++            ; /* Intentional empty while */
++        }
+ 
+-    while ((CCM_CTRL->LPCG[CLOCK_LPCG_NOCMIX_TCU].STATUS0 &
+-        CCM_LPCG_STATUS0_ON_MASK) != 0U)
+-    {
+-        ; /* Intentional empty while */
++        /* Quiesce WAKEUPMIX SMMU TCU */
++        CCM_CTRL->LPCG[CLOCK_LPCG_NOCMIX_TCU].DIRECT &=
++            ~CCM_LPCG_DIRECT_ON_MASK;
++
++        while ((CCM_CTRL->LPCG[CLOCK_LPCG_NOCMIX_TCU].STATUS0 &
++            CCM_LPCG_STATUS0_ON_MASK) != 0U)
++        {
++            ; /* Intentional empty while */
++        }
+     }
+ 
+     /* Return status */
+diff --git a/devices/MIMX95/sm/dev_sm_handlers.c b/devices/MIMX95/sm/dev_sm_handlers.c
+index 3c11ecb..d696fb2 100755
+--- a/devices/MIMX95/sm/dev_sm_handlers.c
++++ b/devices/MIMX95/sm/dev_sm_handlers.c
+@@ -684,7 +684,18 @@ void GPC_SM_REQ_IRQHandler(void)
+     {
+         (void) DEV_SM_PowerUpPost(lpHsMode.srcMixIdx);
+         CPU_MixPowerUpNotify(lpHsMode.srcMixIdx);
++#if (defined(FSL_FEATURE_LP_HANDSHAKE_SM_HAS_ERRATA_52232) && FSL_FEATURE_LP_HANDSHAKE_SM_HAS_ERRATA_52232)
++        if (DEV_SM_SiVerGet() < DEV_SM_SIVER_B0)
++        {
++            PWR_LpHandshakeAckRevA();
++        }
++        else
++        {
++            PWR_LpHandshakeAck();
++        }
++#else
+         PWR_LpHandshakeAck();
++#endif
+         (void) DEV_SM_PowerUpAckComplete(lpHsMode.srcMixIdx);
+     }
+     /* Else powering down or asserting reset */
+@@ -692,7 +703,18 @@ void GPC_SM_REQ_IRQHandler(void)
+     {
+         (void) DEV_SM_PowerDownPre(lpHsMode.srcMixIdx);
+         CPU_MixPowerDownNotify(lpHsMode.srcMixIdx);
++#if (defined(FSL_FEATURE_LP_HANDSHAKE_SM_HAS_ERRATA_52232) && FSL_FEATURE_LP_HANDSHAKE_SM_HAS_ERRATA_52232)
++        if (DEV_SM_SiVerGet() < DEV_SM_SIVER_B0)
++        {
++            PWR_LpHandshakeAckRevA();
++        }
++        else
++        {
++            PWR_LpHandshakeAck();
++        }
++#else
+         PWR_LpHandshakeAck();
++#endif
+     }
+ }
+ 
+diff --git a/devices/MIMX95/sm/dev_sm_power.c b/devices/MIMX95/sm/dev_sm_power.c
+index ef261a0..aa26274 100755
+--- a/devices/MIMX95/sm/dev_sm_power.c
++++ b/devices/MIMX95/sm/dev_sm_power.c
+@@ -177,16 +177,27 @@ int32_t DEV_SM_PowerStateSet(uint32_t domainId, uint8_t powerState)
+             case DEV_SM_POWER_STATE_ON:
+                 if (PWR_IsParentPowered(domainId))
+                 {
+-                    /* Disable MIX-level transaction blocking */
+-                    PWR_MixSsiBlockingSet(domainId, false);
+-                    if (SRC_MixSoftPowerUp(domainId))
++                    /* Skip MIX-level transaction blocking on Rev A  */
++                    if (DEV_SM_SiVerGet() < DEV_SM_SIVER_B0)
+                     {
+-                        status = DEV_SM_PowerUpPost(domainId);
+-
+-                        if (status == SM_ERR_SUCCESS)
++                        if (SRC_MixSoftPowerUp(domainId))
++                        {
++                            status = DEV_SM_PowerUpPost(domainId);
++                        }
++                    }
++                    else
++                    {
++                        /* Disable MIX-level transaction blocking */
++                        PWR_MixSsiBlockingSet(domainId, false);
++                        if (SRC_MixSoftPowerUp(domainId))
+                         {
+-                            /* Restore MIX-level transaction blocking */
+-                            PWR_MixSsiBlockingUpdate(domainId);
++                            status = DEV_SM_PowerUpPost(domainId);
++
++                            if (status == SM_ERR_SUCCESS)
++                            {
++                                /* Restore MIX-level transaction blocking */
++                                PWR_MixSsiBlockingUpdate(domainId);
++                            }
+                         }
+                     }
+                 }
+@@ -198,11 +209,22 @@ int32_t DEV_SM_PowerStateSet(uint32_t domainId, uint8_t powerState)
+             case DEV_SM_POWER_STATE_OFF:
+                 if (!PWR_AnyChildPowered(domainId))
+                 {
+-                    /* Disable MIX-level transaction blocking */
+-                    PWR_MixSsiBlockingSet(domainId, false);
+-                    if (DEV_SM_PowerDownPre(domainId) == SM_ERR_SUCCESS)
++                    /* Skip MIX-level transaction blocking on Rev A  */
++                    if (DEV_SM_SiVerGet() < DEV_SM_SIVER_B0)
+                     {
+-                        SRC_MixSoftPowerDown(domainId);
++                        if (DEV_SM_PowerDownPre(domainId) == SM_ERR_SUCCESS)
++                        {
++                            SRC_MixSoftPowerDown(domainId);
++                        }
++                    }
++                    else
++                    {
++                        /* Disable MIX-level transaction blocking */
++                        PWR_MixSsiBlockingSet(domainId, false);
++                        if (DEV_SM_PowerDownPre(domainId) == SM_ERR_SUCCESS)
++                        {
++                            SRC_MixSoftPowerDown(domainId);
++                        }
+                     }
+                 }
+                 else
+diff --git a/devices/MIMX95/sm/dev_sm_sensor.c b/devices/MIMX95/sm/dev_sm_sensor.c
+index 59ae2e8..e3dea5f 100755
+--- a/devices/MIMX95/sm/dev_sm_sensor.c
++++ b/devices/MIMX95/sm/dev_sm_sensor.c
+@@ -108,9 +108,16 @@ static int32_t DEV_SM_SensorThresholdSet(uint32_t sensorId, uint8_t threshold,
+ int32_t DEV_SM_SensorInit(void)
+ {
+     int32_t status;
++    bool secAccess = false;
++
++    /* Check if A0/1 which allows SM to start */
++    if (DEV_SM_SiVerGet() < DEV_SM_SIVER_B0)
++    {
++        secAccess = true;
++    }
+ 
+     /* Power on ANA sensor */
+-    status = DEV_SM_SensorConfigStart(DEV_SM_SENSOR_TEMP_ANA, false);
++    status = DEV_SM_SensorConfigStart(DEV_SM_SENSOR_TEMP_ANA, secAccess);
+ 
+     /* Enable interrupts */
+     NVIC_EnableIRQ(TMPSNS_ANA_1_IRQn);
+diff --git a/devices/MIMX95/sm/dev_sm_system.c b/devices/MIMX95/sm/dev_sm_system.c
+index 1addb95..266edc3 100755
+--- a/devices/MIMX95/sm/dev_sm_system.c
++++ b/devices/MIMX95/sm/dev_sm_system.c
+@@ -122,25 +122,29 @@ int32_t DEV_SM_SystemInit(void)
+     /* Enable bypass for clock sources */
+     DEV_SM_ClockSourceBypass(true, false);
+ 
+-    /* Configure SMMU TCU/TBU Q-channel control by SW */
+-    CCM_CTRL->LPCG[CLOCK_LPCG_WAKEUPMIX_TBU].AUTHEN |=
+-        CCM_LPCG_AUTHEN_ACK_MODE_MASK;
+-    CCM_CTRL->LPCG[CLOCK_LPCG_WAKEUPMIX_TBU].DIRECT =
+-        CCM_LPCG_DIRECT_QACCEPT_N_TIMEOUT_MASK |
+-        CCM_LPCG_DIRECT_CLKOFF_ACK_TIMEOUT_EN_MASK |
+-        CCM_LPCG_DIRECT_ON_MASK;
+-    CCM_CTRL->LPCG[CLOCK_LPCG_NOCMIX_TBU].AUTHEN |=
+-        CCM_LPCG_AUTHEN_ACK_MODE_MASK;
+-    CCM_CTRL->LPCG[CLOCK_LPCG_NOCMIX_TBU].DIRECT =
+-        CCM_LPCG_DIRECT_QACCEPT_N_TIMEOUT_MASK |
+-        CCM_LPCG_DIRECT_CLKOFF_ACK_TIMEOUT_EN_MASK |
+-        CCM_LPCG_DIRECT_ON_MASK;
+-    CCM_CTRL->LPCG[CLOCK_LPCG_NOCMIX_TCU].AUTHEN |=
+-        CCM_LPCG_AUTHEN_ACK_MODE_MASK;
+-    CCM_CTRL->LPCG[CLOCK_LPCG_NOCMIX_TCU].DIRECT =
+-        CCM_LPCG_DIRECT_QACCEPT_N_TIMEOUT_MASK |
+-        CCM_LPCG_DIRECT_CLKOFF_ACK_TIMEOUT_EN_MASK |
+-        CCM_LPCG_DIRECT_ON_MASK;
++    /* Rev A does not support SMMU TBU/TCU SW control  */
++    if (DEV_SM_SiVerGet() >= DEV_SM_SIVER_B0)
++    {
++        /* Configure SMMU TCU/TBU Q-channel control by SW */
++        CCM_CTRL->LPCG[CLOCK_LPCG_WAKEUPMIX_TBU].AUTHEN |=
++            CCM_LPCG_AUTHEN_ACK_MODE_MASK;
++        CCM_CTRL->LPCG[CLOCK_LPCG_WAKEUPMIX_TBU].DIRECT =
++            CCM_LPCG_DIRECT_QACCEPT_N_TIMEOUT_MASK |
++            CCM_LPCG_DIRECT_CLKOFF_ACK_TIMEOUT_EN_MASK |
++            CCM_LPCG_DIRECT_ON_MASK;
++        CCM_CTRL->LPCG[CLOCK_LPCG_NOCMIX_TBU].AUTHEN |=
++            CCM_LPCG_AUTHEN_ACK_MODE_MASK;
++        CCM_CTRL->LPCG[CLOCK_LPCG_NOCMIX_TBU].DIRECT =
++            CCM_LPCG_DIRECT_QACCEPT_N_TIMEOUT_MASK |
++            CCM_LPCG_DIRECT_CLKOFF_ACK_TIMEOUT_EN_MASK |
++            CCM_LPCG_DIRECT_ON_MASK;
++        CCM_CTRL->LPCG[CLOCK_LPCG_NOCMIX_TCU].AUTHEN |=
++            CCM_LPCG_AUTHEN_ACK_MODE_MASK;
++        CCM_CTRL->LPCG[CLOCK_LPCG_NOCMIX_TCU].DIRECT =
++            CCM_LPCG_DIRECT_QACCEPT_N_TIMEOUT_MASK |
++            CCM_LPCG_DIRECT_CLKOFF_ACK_TIMEOUT_EN_MASK |
++            CCM_LPCG_DIRECT_ON_MASK;
++    }
+ 
+     /* Power down DDRMIX if uninitialized by OEI */
+     if (!CLOCK_SourceGetEnable(CLOCK_SRC_DRAMPLL_VCO))
+-- 
+2.43.0
+
