@@ -1,0 +1,20 @@
+&scmi_iomuxc {
+	pinctrl_usb_otg: usb_otg_grp {
+		fsl,pins = <
+			IMX95_PAD_ENET2_MDC__GPIO4_IO_BIT14		0x31e
+		>;
+	};
+};
+
+&usb2 {
+	dr_mode = "host";
+	status = "okay";
+};
+
+&usb3 {
+	status = "okay";
+};
+
+&usb3_phy {
+	status = "okay";
+};

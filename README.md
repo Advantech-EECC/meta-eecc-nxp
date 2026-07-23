@@ -17,7 +17,7 @@ The following boards are supported by this layer:
  * ROM-5722-CQ-A1 6GB (`rom5722-db2510` NXP i.MX 8M Plus)
  * RSB-3720-CD/CQ-A1/A2 6GB A1,A2 (`rsb3720` `rsb3720-6g` NXP i.MX 8M Plus)
  * RSB-3720-CD/CQ-A2 4GB A2 (`rsb3720-4g` NXP i.MX 8M Plus)
- * AOM-5521 8GB (MACHINE=`aom5521-db2510` NXP i.MX 95)
+ * AOM-5521 A1 8GB (MACHINE=`aom5521a1-db2510` NXP i.MX 95)
 
 Preliminary support:
 
@@ -282,28 +282,28 @@ RSB-3720
 |Watchdog1 | ✅ | External I2C Advantech watchdog (MSP430-based) |
 |Secure Boot HABv4 | ⚠️ | Not tested, likely to work (similar to ROM-5721) |
 
-AOM-5521 (on SOM-DB2510 carrier board)
+AOM-5521 A1 (on SOM-DB2510 carrier board)
 --------
 
-|Device |Status|Comment|
-|-------|------|-------|
-|USDHC1 | ✅ | eMMC 5.1 (automated test pass) |
-|USDHC2 | ✅ | SD Card (automated test pass) |
-|ETH0 | ✅ | Ethernet (automated test pass) |
-|ETH1 | ✅ | Ethernet with TSN (automated test pass) |
-|USB1| ❌ | USB 3.2 Gen1 (automated test errors found) |
-|USB2| ❌ | USB 2.0 (automated test errors found) |
-|LPUART1 | ✅⚠️ | Console available; automated UART category has errors |
-|I2C | ✅ | Automated test pass |
-|CAN-FD| ✅ | Automated test pass |
-|GPIO| ⚠️ | Not tested |
-|NPU| ✅ | 2 TOPS NPU (automated test pass) |
-|GPU| ❌ | Mali-G310 (automated test errors found) |
-|VPU| ⚠️ | 4K video processing (not tested) |
-|HDMI| ⚠️ | Not tested |
-|MIPI-DSI| ⚠️ | 4-lane (not tested) |
-|LVDS| ⚠️ | Dual-channel (not tested) |
-|PCIe| ✅ | 2x Gen 3.0 (automated test pass) |
-|M.2| ⚠️ | Not tested |
-|mini PCIe| ⚠️ | Not tested |
-|Secure Boot | ⚠️ | Not tested |
+| Device      | Status | Comment                                               |
+| ----------- | ------ | ----------------------------------------------------- |
+| USDHC1      | ✅      | eMMC 5.1 (automated test pass)                        |
+| USDHC2      | ✅      | SD Card (automated test pass)                         |
+| ETH0        | ✅      | Ethernet (automated test pass)                        |
+| ETH1        | ✅      | Ethernet with TSN (automated test pass)               |
+| USB1        | ✅      | USB 3.2 Gen1 (automated test errors found)            |
+| USB2        | ✅      | USB 2.0 (automated test errors found)                 |
+| LPUART1     | ✅⚠️     | Console available; automated UART category has errors |
+| I2C         | ✅      | Automated test pass                                   |
+| CAN-FD      | ✅      | Automated test pass                                   |
+| GPIO        | ⚠️      | Not tested                                            |
+| NPU         | ✅      | 2 TOPS NPU (automated test pass)                      |
+| GPU         | ❌      | Mali-G310 (automated test errors found)               |
+| VPU         | ⚠️      | 4K video processing (not tested)                      |
+| HDMI        | ⚠️      | Not tested                                            |
+| MIPI-DSI    | ⚠️      | 4-lane (not tested)                                   |
+| LVDS        | ⚠️      | Dual-channel (not tested)                             |
+| PCIe        | ✅      | 2x Gen 3.0 (automated test pass)                      |
+| M.2         | ⚠️      | Not tested                                            |
+| mini PCIe   | ⚠️      | Not tested                                            |
+| Secure Boot | ⚠️      | Not tested                                            |

@@ -1,4 +1,4 @@
-#include "imx95-aom5521-a2-lpuart5.dtsi"
+#include "imx95-aom5521-a1-lpuart5.dtsi"
 
 &gpio_exp3 {
 
