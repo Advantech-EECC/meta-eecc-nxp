@@ -1,8 +1,8 @@
 From c2466f358f4ccdc1fe98a35f3af9642bece68560 Mon Sep 17 00:00:00 2001
-From: "copilot-swe-agent[bot]" <198982749+Copilot@users.noreply.github.com>
+From: "Mikhail Tsukerman" <mikhail.tsukerman@advantech.com>
 Date: Thu, 16 Jul 2026 11:24:58 +0000
 Subject: [PATCH] Add AOM5521A1 16G/8G LPDDR5 board ports for i.MX95
-
+Upstream-Status: Inappropriate
 ---
  Makefile                                      |     1 +
  README.md                                     |     9 +

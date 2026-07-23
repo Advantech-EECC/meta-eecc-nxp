@@ -1,8 +1,8 @@
 From 83904dbe2575a37fa1a97474aec147a1daf9cd36 Mon Sep 17 00:00:00 2001
 From: "Mikhail Tsukerman" <mikhail.tsukerman@advantech.com>
 Date: Wed, 15 Jul 2026 15:56:16 +0000
-Subject: [PATCH] AOM5521 support
-
+Subject: [PATCH] AOM5521 A1 Support
+Upstream-Status: Inappropriate
 ---
  .gitignore                             |   1 +
  boards/mcimx95evk/sm/brd_sm_handlers.c | 146 ++++++++++++++++++++-----

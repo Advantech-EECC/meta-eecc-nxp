@@ -1,8 +1,8 @@
 From 0a76a4b01868a10ccfc382f3e92bf68bd3fc8b4b Mon Sep 17 00:00:00 2001
-From: Mikhail Tsukerman <miketsukerman@gmail.com>
+From: "Mikhail Tsukerman" <mikhail.tsukerman@advantech.com>
 Date: Wed, 15 Jul 2026 19:52:52 +0200
 Subject: [PATCH] Fix LEDS on DB2510
-
+Upstream-Status: Inappropriate
 ---
  drivers/net/phy/realtek.c | 15 +++++++++++++++
  1 file changed, 15 insertions(+)

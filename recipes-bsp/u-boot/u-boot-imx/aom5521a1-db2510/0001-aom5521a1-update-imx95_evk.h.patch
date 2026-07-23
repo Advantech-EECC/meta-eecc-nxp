@@ -1,8 +1,7 @@
 From 0f6e15c30ca8447f0e15b63f92ab80612b5c60bd Mon Sep 17 00:00:00 2001
-From: Mikhail Tsukerman <miketsukerman@gmail.com>
+From: "Mikhail Tsukerman" <mikhail.tsukerman@advantech.com>
 Date: Tue, 14 Jul 2026 20:47:55 +0200
 Subject: [PATCH] aom5521a1: update imx95_evk.h
-
 Upstream-Status: Inappropriate
 ---
  include/configs/imx95_evk.h | 11 +++++------
