@@ -1,5 +1,5 @@
 From 326e1fe00638a0c0e40e014e6a82a8e67d7955b7 Mon Sep 17 00:00:00 2001
-From: Mikhail Tsukerman <miketsukerman@gmail.com>
+From: "Mikhail Tsukerman" <mikhail.tsukerman@advantech.com>
 Date: Thu, 16 Jul 2026 11:22:42 +0200
 Subject: [PATCH] Add AOM5521 8Gb/16Gb support
 Upstream-Status: Inappropriate
