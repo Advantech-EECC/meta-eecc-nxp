@@ -248,30 +248,30 @@ RSB-3720
 |Watchdog1 | ✅ | External I2C Advantech watchdog (MSP430-based) |
 |Secure Boot HABv4 | ⚠️ | Not tested, likely to work (similar to ROM-5721) |
 
-AOM-5521 (on SOM-DB2510 carrier board)
+AOM-5521 A1 (on SOM-DB2510 carrier board)
 --------
 
-|Device |Status|Comment|
-|-------|------|-------|
-|USDHC1 | ⚠️ | eMMC 5.1 (not tested) |
-|USDHC2 | ⚠️ | SD Card (not tested) |
-|ETH0 | ⚠️ | Ethernet (not tested) |
-|ETH1 | ⚠️ | Ethernet with TSN (not tested) |
-|USB1| ⚠️ | USB 3.2 Gen1 (not tested) |
-|USB2| ⚠️ | USB 2.0 (not tested) |
-|LPUART1 | ⚠️ | Console (not tested) |
-|I2C | ⚠️ | Not tested |
-|CAN-FD| ⚠️ | Not tested |
-|GPIO| ⚠️ | Not tested |
-|NPU| ⚠️ | 2 TOPS NPU (not tested) |
-|GPU| ⚠️ | Mali-G310 (not tested) |
-|VPU| ⚠️ | 4K video processing (not tested) |
-|HDMI| ⚠️ | Not tested |
-|MIPI-DSI| ⚠️ | 4-lane (not tested) |
-|LVDS| ⚠️ | Dual-channel (not tested) |
-|PCIe| ⚠️ | 2x Gen 3.0 (not tested) |
-|M.2| ⚠️ | Not tested |
-|mini PCIe| ⚠️ | Not tested |
-|Secure Boot | ⚠️ | Not tested |
+| Device      | Status | Comment                                                                       |
+| ----------- | ------ | ----------------------------------------------------------------------------  |
+| USDHC1      | ✅      | eMMC 5.1 tested (PASS)                                                       |
+| USDHC2      | ✅      | SD Card tested (PASS)                                                        |
+| ETH0        | ✅      | Ethernet tested (PASS)                                                       |
+| ETH1        | ✅      | Ethernet with TSN tested (PASS)                                              |
+| USB1        | ✅      | USB 3.2 Gen1 detected, plugged-device works                                  |
+| USB2        | ✅      | USB 2.0 detected, plugged-device works                                       |
+| LPUART1     | ✅      | Console tested (PASS)                                                        |
+| I2C         | ✅      | Automated tests OK                                                           |
+| CAN-FD      | ✅⚠️     | Automated tests OK; external controller test is manual                      |
+| GPIO        | ⚠️      | Not tested                                                                   |
+| NPU         | ✅      | 2 TOPS NPU tested (automated tests OK)                                       |
+| GPU         | ⚠️      | Mali-G310 present; DRI/KMS (card1), OpenGL ES, Wayland, Xwayland not tested  |
+| VPU         | ⚠️      | 4K video processing (not tested)                                             |
+| HDMI        | ⚠️      | Not tested                                                                   |
+| MIPI-DSI    | ⚠️      | 4-lane (not tested)                                                          |
+| LVDS        | ⚠️      | Dual-channel (not tested)                                                    |
+| PCIe        | ✅      | 2x Gen 3.0 tested (automated tests OK)                                       |
+| M.2         | ⚠️      | Not tested                                                                   |
+| mini PCIe   | ⚠️      | Not tested                                                                   |
+| Secure Boot | ⚠️      | Not tested                                                                   |
 
 Note: This is preliminary support for AOM-5521. All features require testing and validation.
