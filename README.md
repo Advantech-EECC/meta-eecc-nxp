@@ -247,7 +247,7 @@ RSB-3720
 |Watchdog0 | ✅ | Internal watchdog |
 |Watchdog1 | ✅ | External I2C Advantech watchdog (MSP430-based) |
 |Secure Boot HABv4 | ⚠️ | Not tested, likely to work (similar to ROM-5721) |
-
+ 
 AOM-5521 A1 (on SOM-DB2510 carrier board)
 --------
 
