@@ -57,7 +57,7 @@ ROM-2620 (on ROM-ED91 carrier board)
 |GPIO A,B,C| ❌ | Need to be accessed from M33 |
 |RTC | ✅ | Internal RTC, supports timer wake events |
 |Watchdog | ✅ | Internal watchdog |
-|Secure Boot AHAB | ❌ | Not tested |
+|Secure Boot | ✅ | Tested (AHAB ecc256-sha256 + SHA256 SRK certificate table hash) |
 
 ROM-2820 (on ROM-ED93 carrier board)
 --------
@@ -92,7 +92,7 @@ ROM-2820 (on ROM-ED93 carrier board)
 |RTC0 | ✅ | External I2C RTC (rx8900) |
 |RTC1 | ✅ | Internal RTC, supports timer wake events |
 |Watchdog | ✅ | Internal watchdog |
-|Secure Boot AHAB | ❌ | Not tested |
+|Secure Boot | ✅ | Tested (AHAB ecc256-sha256 + SHA256 SRK certificate table hash) |
 
 ROM-5620 (on SOM-DB5901 carrier board)
 --------
@@ -204,7 +204,7 @@ CQ: preliminary support
 |TPM | ⚠️  | Not tested (st33htpm-i2c) |
 |Watchdog0 | ✅ | Internal watchdog |
 |Watchdog1 | ✅ | External I2C Advantech watchdog (MSP430-based) |
-|Secure Boot HABv4 | ✅ | Tested (full chain of trust + locked boot loader) |
+|Secure Boot | ✅ | Tested (HABv4 rsa2048-CA-sha256 + SHA256 SRK certificate table hash) |
 
 ROM-5722 (on SOM-DB2510 carrier board)
 --------

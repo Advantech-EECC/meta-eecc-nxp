@@ -1,0 +1,34 @@
+Observation: ad hoc patch
+Upstream-Status: Inappropriate [other]
+Signed-off-by: F. Aragon <francisco.aragon@advantech.de>
+
+diff --git a/iMX8ULP/soc.mak b/iMX8ULP/soc.mak
+index dd61cd7..0be5319 100644
+--- a/iMX8ULP/soc.mak
++++ b/iMX8ULP/soc.mak
+@@ -25,6 +25,8 @@ UPOWER_IMG = upower.bin
+ MCU_IMG = m33_image.bin
+ ROM_PATCH_IMG = ahab-container-patch.bin
+ 
++KERNEL_DTB ?= imx8ulp-evk.dtb
++
+ SPL_LOAD_ADDR ?= 0x22020000
+ ATF_LOAD_ADDR ?= 0x20040000
+ TEE_LOAD_ADDR ?= 0xa6000000
+@@ -152,12 +154,12 @@ ifeq ($(REV),A0)
+ prepare_kernel_chunks: Image
+ 	./$(SPLIT_KERNEL) Image 0x80400000 0x700000
+ 
+-flash_kernel: $(MKIMG) prepare_kernel_chunks imx8ulp-evk.dtb
++flash_kernel: $(MKIMG) prepare_kernel_chunks $(KERNEL_DTB)
+ 	KERNEL_CMD="$(shell cat Image_cmd)"; \
+-	./$(MKIMG) -soc ULP -c $$KERNEL_CMD --data imx8ulp-evk.dtb a35 0x83000000 -out flash.bin
++	./$(MKIMG) -soc ULP -c $$KERNEL_CMD --data $(KERNEL_DTB) a35 0x83000000 -out flash.bin
+ else
+-flash_kernel: $(MKIMG) Image imx8ulp-evk.dtb
+-	./$(MKIMG) -soc ULP -c -ap Image a35 0x80400000 --data imx8ulp-evk.dtb a35 0x83000000 -out flash.bin
++flash_kernel: $(MKIMG) Image $(KERNEL_DTB)
++	./$(MKIMG) -soc ULP -c -ap Image a35 0x80400000 --data $(KERNEL_DTB) a35 0x83000000 -out flash.bin
+ endif
+ 
+ parse_container: $(MKIMG) flash.bin
