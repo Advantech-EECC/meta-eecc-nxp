@@ -8,20 +8,32 @@
 #include "imx8qxp.dtsi"
 #include <dt-bindings/usb/pd.h>
 
-/* Definitions */
 #define ROM_DB5901
 #define SDHC_LOW_SPEED_ONLY
 #define ROM_DB5901_I2S_CN3
 #define SDHC_DISABLE_WP
+#define ENABLE_LVDS
+//#define ENABLE_SGTL5000
 
-/* LVDS Panel : only choose one!
- *   LVDS_AUO_7, LVDS_CHIMEI_15, LVDS_AUO_215
+/*
+ * AUO 7 (IDK-1107W): LVDS 3V, BCKL 12V
+ * AUO 215 (G215HVN01): LVDS 5V, BCKL 12V
  */
-#define LVDS_AUO_7
 
-#ifdef LVDS_AUO_215
-  #define LVDS_DUAL_CHANNEL
+#ifdef ENABLE_LVDS
+	#if !defined(LVDS_AUO_7) && !defined(LVDS_CHIMEI_15) && \
+	    !defined(LVDS_AUO_215)
+		#define LVDS_AUO_7
+	#endif
+	#ifdef LVDS_AUO_215
+		#define LVDS_DUAL_CHANNEL
+	#else
+		#if !defined(LVDS_SINGLE_0) && !defined(LVDS_SINGLE_1)
+			#define LVDS_SINGLE_0
+		#endif
+	#endif
 #endif
+
 /*************************** based on imx8x-mek.dtsi *****************************/
 
 / {
@@ -30,22 +42,18 @@
 
 	aliases {
 		rtc0 = &rtc0;
-		rtc1 = &rtc;
 		watchdog0 = &wdt;
+		i2c0 = &i2c_mipi_csi0;
+		i2c1 = &cm40_i2c;
+		i2c2 = &i2c0_mipi_lvds0;
+		i2c3 = &i2c0_mipi_lvds1;
+		i2c4 = &i2c1;
 	};
 
 	board {
 		compatible = "proc-board";
 		board-type = "ROM-5620 A1";
 		board-cpu = "IMX8X";
-	};
-
-	aliases {
-		i2c0 = &i2c_mipi_csi0;
-		i2c1 = &cm40_i2c;
-		i2c2 = &i2c0_mipi_lvds0;
-		i2c3 = &i2c0_mipi_lvds1;
-		i2c4 = &i2c1;
 	};
 
 	chosen {
@@ -55,7 +63,6 @@
 	lvds_backlight0: lvds_backlight@0 {
 		compatible = "pwm-backlight";
 		pwms = <&pwm_mipi_lvds0 0 5000000>;
-
 		brightness-levels = < 0  1  2  3  4  5  6  7  8  9
 				     10 11 12 13 14 15 16 17 18 19
 				     20 21 22 23 24 25 26 27 28 29
@@ -73,7 +80,6 @@
 	lvds_backlight1: lvds_backlight@1 {
 		compatible = "pwm-backlight";
 		pwms = <&pwm_mipi_lvds1 0 5000000>;
-
 		brightness-levels = < 0  1  2  3  4  5  6  7  8  9
 				     10 11 12 13 14 15 16 17 18 19
 				     20 21 22 23 24 25 26 27 28 29
@@ -85,159 +91,13 @@
 				     80 81 82 83 84 85 86 87 88 89
 				     90 91 92 93 94 95 96 97 98 99
 				    100>;
+
 		default-brightness-level = <80>;
 	};
 
 	memory@80000000 {
 		device_type = "memory";
-		reg = <0x00000000 0x80000000 0 0x40000000>;
-	};
-
-	resmem: reserved-memory {
-		#address-cells = <2>;
-		#size-cells = <2>;
-		ranges;
-
-		/*
-		 * 0x8800_0000 ~ 0x8FFF_FFFF is reserved for M4
-		 * Shouldn't be used at A core and Linux side.
-		 *
-		 */
-		m4_reserved: m4@0x88000000 {
-			no-map;
-			reg = <0 0x88000000 0 0x8000000>;
-		};
-
-		rpmsg_reserved: rpmsg@0x90000000 {
-			no-map;
-			reg = <0 0x90200000 0 0x200000>;
-		};
-
-		decoder_boot: decoder-boot@84000000 {
-			reg = <0 0x84000000 0 0x2000000>;
-			no-map;
-		};
-
-		encoder_boot: encoder-boot@86000000 {
-			reg = <0 0x86000000 0 0x200000>;
-			no-map;
-		};
-
-#if 0
-		decoder_rpc: decoder-rpc@0x92000000 {
-			reg = <0 0x92000000 0 0x200000>;
-			no-map;
-		};
-
-		encoder_rpc: encoder-rpc@0x92200000 {
-			reg = <0 0x92200000 0 0x200000>;
-			no-map;
-		};
-#endif
-		encoder_reserved: encoder_reserved@94400000 {
-			no-map;
-			reg = <0 0x94400000 0 0x800000>;
-		};
-		/* global autoconfigured region for contiguous allocations */
-		linux,cma {
-			compatible = "shared-dma-pool";
-			reusable;
-			size = <0 0x3c000000>;
-			alloc-ranges = <0 0x96000000 0 0x3c000000>;
-			linux,cma-default;
-		};
-	};
-
-	/* SDIO_PWR_EN */
-	reg_usdhc2_vmmc: usdhc2-vmmc {
-		compatible = "regulator-fixed";
-		regulator-name = "SD1_SPWR";
-		regulator-min-microvolt = <3000000>;
-		regulator-max-microvolt = <3000000>;
-		gpio = <&lsio_gpio4 19 GPIO_ACTIVE_HIGH>;
-		off-on-delay-us = <3480>;
-		enable-active-high;
-	};
-
-	/* M2_SDIO_RST# */
-	epdev_on: fixedregulator@100 {
-		compatible = "regulator-fixed";
-		regulator-min-microvolt = <3300000>;
-		regulator-max-microvolt = <3300000>;
-		regulator-name = "epdev_on";
-		gpio = <&gpio_exp2 4 GPIO_ACTIVE_HIGH>;
-		enable-active-high;
-	};
-
-	reg_can_en: regulator-can-en {
-		compatible = "regulator-fixed";
-		regulator-name = "can-en";
-		regulator-min-microvolt = <3300000>;
-		regulator-max-microvolt = <3300000>;
-		enable-active-high;
-	};
-
-	reg_can_stby: regulator-can-stby {
-		compatible = "regulator-fixed";
-		regulator-name = "can-stby";
-		regulator-min-microvolt = <3300000>;
-		regulator-max-microvolt = <3300000>;
-		enable-active-high;
-		vin-supply = <&reg_can_en>;
-	};
-
-	/* USB0_OTG_EN_OC# */
-	reg_usb_otg1_vbus: regulator-usbotg1-vbus {
-		compatible = "regulator-fixed";
-		regulator-name = "usb_otg1_vbus";
-		regulator-min-microvolt = <5000000>;
-		regulator-max-microvolt = <5000000>;
-		gpio = <&lsio_gpio4 3 GPIO_ACTIVE_LOW>;
-		enable-active-high;
-	};
-
-	/* USB1_EN_OC# */
-	reg_usb_otg2_vbus: regulator-usbotg2-vbus {
-		compatible = "regulator-fixed";
-		regulator-name = "usb_otg2_vbus";
-		regulator-min-microvolt = <3300000>;
-		regulator-max-microvolt = <3300000>;
-		gpio = <&lsio_gpio4 5 GPIO_ACTIVE_HIGH>;
-		enable-active-low;
-	};
-
-#ifdef ROM_DB5901
-	sound: sound {
-		compatible = "fsl,imx-audio-sgtl5000";
-		model = "sgtl5000";
-#ifdef ROM_DB5901_I2S_CN3
-		ssi-controller = <&sai1>;
-#else
-		ssi-controller = <&sai0>;
-#endif
-		audio-codec = <&codec>;
-		no-audmux;
-		audio-routing =
-			"MIC_IN", "Mic Jack",
-			"Mic Jack", "Mic Bias",
-			"Headphone Jack", "HP_OUT";
-	};
-#endif
-
-	imx8x_cm4: imx8x_cm4@0 {
-		compatible = "fsl,imx8qxp-cm4";
-		rsc-da = <0x90000000>;
-		mbox-names = "tx", "rx", "rxdb";
-		mboxes = <&lsio_mu5 0 1
-			  &lsio_mu5 1 1
-			  &lsio_mu5 3 1>;
-		memory-region = <&vdevbuffer>, <&vdev0vring0>, <&vdev0vring1>,
-				<&vdev1vring0>, <&vdev1vring1>, <&rsc_table>;
-		power-domains = <&pd IMX_SC_R_M4_0_PID0>,
-				<&pd IMX_SC_R_M4_0_MU_1A>;
-		fsl,entry-address = <0x34fe0000>;
-		fsl,resource-id = <IMX_SC_R_M4_0_PID0>;
-		status = "okay";
+		reg = <0x00000000 0x80000000 0 0x80000000>;
 	};
 
 	reserved-memory {
@@ -292,20 +152,6 @@
 			no-map;
 		};
 
-		/* global autoconfigured region for contiguous allocations */
-		linux,cma {
-			compatible = "shared-dma-pool";
-			alloc-ranges = <0 0xc0000000 0 0x3c000000>;
-			size = <0 0x3c000000>;
-			linux,cma-default;
-			reusable;
-		};
-
-		gpu_reserved: memory@880000000 {
-			no-map;
-			reg = <0x8 0x80000000 0 0x10000000>;
-		};
-
 		decoder_boot: decoder-boot@84000000 {
 			reg = <0 0x84000000 0 0x2000000>;
 			no-map;
@@ -336,6 +182,11 @@
 			no-map;
 		};
 
+		gpu_reserved: memory@b0000000 {
+			no-map;
+			reg = <0 0xb0000000 0 0x10000000>;
+		};
+
 		/* global autoconfigured region for contiguous allocations */
 		linux,cma {
 			compatible = "shared-dma-pool";
@@ -345,6 +196,121 @@
 			linux,cma-default;
 		};
 	};
+	/* SDIO_PWR_EN */
+	reg_usdhc2_vmmc: usdhc2-vmmc {
+		compatible = "regulator-fixed";
+		regulator-name = "SD1_SPWR";
+		regulator-min-microvolt = <3000000>;
+		regulator-max-microvolt = <3000000>;
+		gpio = <&lsio_gpio4 19 GPIO_ACTIVE_HIGH>;
+		off-on-delay-us = <3480>;
+		enable-active-high;
+	};
+
+	/* M2_SDIO_RST# */
+	epdev_on: fixedregulator@100 {
+		compatible = "regulator-fixed";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		regulator-name = "epdev_on";
+		gpio = <&gpio_exp2 4 GPIO_ACTIVE_HIGH>;
+		enable-active-high;
+		regulator-always-on;
+	};
+
+	reg_can_en: regulator-can-en {
+		compatible = "regulator-fixed";
+		regulator-name = "can-en";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		enable-active-high;
+	};
+
+	reg_can_stby: regulator-can-stby {
+		compatible = "regulator-fixed";
+		regulator-name = "can-stby";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		enable-active-high;
+		vin-supply = <&reg_can_en>;
+	};
+
+	/* USB0_OTG_EN_OC# */
+	reg_usb_otg1_vbus: regulator-usbotg1-vbus {
+		compatible = "regulator-fixed";
+		regulator-name = "usb_otg1_vbus";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		gpio = <&lsio_gpio4 3 GPIO_ACTIVE_LOW>;
+	};
+
+	/* USB1_EN_OC# */
+	reg_usb_otg2_vbus: regulator-usbotg2-vbus {
+		compatible = "regulator-fixed";
+		regulator-name = "usb_otg2_vbus";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		gpio = <&lsio_gpio4 5 GPIO_ACTIVE_LOW>;
+		off-on-delay-us = <100000>; // 100ms
+	};
+
+	reg_lvds0_vcc: regulator-lvds0-vcc {
+		compatible = "regulator-fixed";
+		regulator-name = "lvds0_vcc";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		gpio = <&lsio_gpio3 13 GPIO_ACTIVE_HIGH>;
+		enable-active-high;
+	};
+
+	reg_lvds1_vcc: regulator-lvds1-vcc {
+		compatible = "regulator-fixed";
+		regulator-name = "lvds1_vcc";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		gpio = <&lsio_gpio0 12 GPIO_ACTIVE_HIGH>;
+		enable-active-high;
+	};
+
+#ifdef ROM_DB5901
+	sound: sound {
+		compatible = "fsl,imx-audio-sgtl5000";
+		model = "sgtl5000";
+#ifdef ROM_DB5901_I2S_CN3
+		ssi-controller = <&sai1>;
+#else
+		ssi-controller = <&sai0>;
+#endif
+		audio-codec = <&codec>;
+		fsl,no-audmux;
+		audio-routing =
+			"MIC_IN", "Mic Jack",
+			"Mic Jack", "Mic Bias",
+			"Headphone Jack", "HP_OUT";
+#ifdef ENABLE_SGTL5000
+		status = "okay";
+#else
+		status = "disabled";
+#endif
+	};
+#endif
+
+	imx8x_cm4: imx8x_cm4@0 {
+		compatible = "fsl,imx8qxp-cm4";
+		rsc-da = <0x90000000>;
+		mbox-names = "tx", "rx", "rxdb";
+		mboxes = <&lsio_mu5 0 1
+			  &lsio_mu5 1 1
+			  &lsio_mu5 3 1>;
+		memory-region = <&vdevbuffer>, <&vdev0vring0>, <&vdev0vring1>,
+				<&vdev1vring0>, <&vdev1vring1>, <&rsc_table>;
+		power-domains = <&pd IMX_SC_R_M4_0_PID0>,
+				<&pd IMX_SC_R_M4_0_MU_1A>;
+		fsl,entry-address = <0x34fe0000>;
+		fsl,resource-id = <IMX_SC_R_M4_0_PID0>;
+		status = "okay";
+	};
+
         gpio-keys-polled {
                 compatible = "gpio-keys-polled";
                 #address-cells = <1>;
@@ -369,12 +335,18 @@
 	lvds_panel0: lvds_panel@0 {
 #ifdef LVDS_AUO_215 /* Dual channel panel */
 		compatible = "auo,t215hvn01";
+		data-mapping = "jeida-24";
 #elif defined(LVDS_CHIMEI_15)
 		compatible = "auo,g150xgel04";
-#else /* LVDS_AUO_7 */
+		data-mapping = "jeida-24";
+#elif defined(LVDS_AUO_7)
 		compatible = "auo,g070vvn01";
+		data-mapping = "jeida-18";
+#else
+		status = "disabled";
 #endif
 		backlight = <&lvds_backlight0>;
+		power-supply = <&reg_lvds0_vcc>;
 
 		port {
 			panel_lvds_in0: endpoint {
@@ -386,10 +358,15 @@
 	lvds_panel1: lvds_panel@1 {
 #ifdef LVDS_CHIMEI_15
 		compatible = "auo,g150xgel04";
-#else /* LVDS_AUO_7 */
+		data-mapping = "jeida-24";
+#elif defined(LVDS_AUO_7)
 		compatible = "auo,g070vvn01";
+		data-mapping = "jeida-18";
+#else
+		status = "disabled";
 #endif
 		backlight = <&lvds_backlight1>;
+		power-supply = <&reg_lvds1_vcc>;
 
 		port {
 			panel_lvds_in1: endpoint {
@@ -423,6 +400,18 @@
 		pinctrl-0 = <&pinctrl_battery>;
 	};
 #endif
+};
+
+&lsio_mu5 {
+    status = "okay";
+};
+
+&mu_m0 {
+	status = "okay";
+};
+
+&mu1_m0 {
+	status = "okay";
 };
 
 &cm40_intmux {
@@ -498,6 +487,8 @@
 	status = "okay";
 };
 
+#ifdef ENABLE_LVDS
+
 &pwm_mipi_lvds0 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_pwm_mipi_lvds0>;
@@ -518,10 +509,10 @@
 };
 
 &ldb1 {
-#ifdef LVDS_SINGLE_1
-	status = "disabled";
-#else
+#if defined(LVDS_SINGLE_0) || defined(LVDS_DUAL_CHANNEL)
 	status = "okay";
+#else
+	status = "disabled";
 #endif
 
 #ifdef LVDS_DUAL_CHANNEL
@@ -552,15 +543,14 @@
 &lvds_backlight1 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_ldb2>;
-	lvds-vcc-enable-gpios = <&lsio_gpio0 12 1>;
-	lvds-bkl-enable-gpios = <&lsio_gpio3 8 1>;
-#if defined(LVDS_SINGLE_0)
-	status = "disabled";
-#elif defined(LVDS_SINGLE_1)
+	enable-gpios = <&lsio_gpio3 8 GPIO_ACTIVE_HIGH>;
+#ifdef defined(LVDS_SINGLE_1)
 	status = "okay";
-#else
+#elif defined(LVDS_DUAL_CHANNEL)
 	skip-gpios-init;
 	status = "okay";
+#else
+	status = "disabled";
 #endif
 };
 
@@ -569,6 +559,88 @@
 	pinctrl-0 = <&pinctrl_pwm_mipi_lvds1>;
 	status = "okay";
 };
+
+&i2c0_mipi_lvds1 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_i2c0_mipi_lvds1>;
+	clock-frequency = <100000>;
+	status = "okay";
+
+#ifdef ROM_DB5901
+	codec: sgtl5000@a {
+		compatible = "fsl,sgtl5000";
+		reg = <0x0a>;
+		clocks = <&mclkout0_lpcg 0>;
+		clock-names = "mclk";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_sai_mclk>;
+		assigned-clocks = <&clk IMX_SC_R_AUDIO_PLL_0 IMX_SC_PM_CLK_PLL>,
+					<&clk IMX_SC_R_AUDIO_PLL_0 IMX_SC_PM_CLK_SLV_BUS>,
+					<&clk IMX_SC_R_AUDIO_PLL_0 IMX_SC_PM_CLK_MST_BUS>,
+					<&mclkout0_lpcg 0>;
+		assigned-clock-rates = <786432000>, <49152000>, <24000000>, <24000000>;
+#ifdef ENABLE_SGTL5000
+		status = "okay";
+#else
+		status = "disabled";
+#endif
+	};
+
+	i2c_gp_1: 24c32@50 {
+		compatible = "fsl,24c32";
+		reg = <0x50>;
+	};
+
+	eeprom: 24c64@57 {
+		compatible = "st,24c64";
+		reg = <0x57>;
+	};
+
+	gpio_exp2: tca9538@70 {
+		compatible = "nxp,pca9538";
+		reg = <0x70>;
+		gpio-controller;
+		#gpio-cells = <2>;
+	};
+#endif
+};
+
+&ldb2_phy {
+	status = "okay";
+};
+
+&ldb2 {
+#if defined(LVDS_SINGLE_1)
+	status = "okay";
+#else
+	status = "disabled";
+#endif
+
+	lvds-channel@0 {
+		fsl,data-mapping = "spwg";
+		fsl,data-width = <24>;
+		status = "okay";
+
+		port@1 {
+			reg = <1>;
+			lvds_out1: endpoint {
+				remote-endpoint = <&panel_lvds_in1>;
+			};
+		};
+	};
+};
+
+&mipi1_dphy {
+	status = "okay";
+};
+
+&mipi1_dsi_host {
+	status = "disabled";
+};
+
+#endif //#ifdef ENABLE_LVDS
 
 &fec1 {
 	pinctrl-names = "default";
@@ -620,84 +692,6 @@
 	status = "okay";
 };
 
-&i2c0_mipi_lvds1 {
-	#address-cells = <1>;
-	#size-cells = <0>;
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_i2c0_mipi_lvds1>;
-	clock-frequency = <100000>;
-	status = "okay";
-
-#ifdef ROM_DB5901
-	codec: sgtl5000@a {
-		compatible = "fsl,sgtl5000";
-		reg = <0x0a>;
-		clocks = <&mclkout0_lpcg 0>;
-		clock-names = "mclk";
-		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_sai_mclk>;
-		assigned-clocks = <&clk IMX_SC_R_AUDIO_PLL_0 IMX_SC_PM_CLK_PLL>,
-					<&clk IMX_SC_R_AUDIO_PLL_0 IMX_SC_PM_CLK_SLV_BUS>,
-					<&clk IMX_SC_R_AUDIO_PLL_0 IMX_SC_PM_CLK_MST_BUS>,
-					<&mclkout0_lpcg 0>;
-		assigned-clock-rates = <786432000>, <49152000>, <24000000>, <24000000>;
-	};
-
-	i2c_gp_1: 24c32@50 {
-		compatible = "fsl,24c32";
-		reg = <0x50>;
-	};
-
-	eeprom: 24c64@57 {
-		compatible = "st,24c64";
-		reg = <0x57>;
-	};
-
-	gpio_exp2: tca9538@70 {
-		compatible = "nxp,pca9538";
-		reg = <0x70>;
-		gpio-controller;
-		#gpio-cells = <2>;
-	};
-#endif
-};
-
-&ldb2_phy {
-	status = "okay";
-};
-
-&ldb2 {
-#ifdef LVDS_DUAL_CHANNEL
-	status = "disabled";
-#elif defined(LVDS_SINGLE_0)
-	status = "disabled";
-#elif defined(LVDS_SINGLE_1)
-	status = "okay";
-#else
-	status = "okay";
-#endif
-	lvds-channel@0 {
-		fsl,data-mapping = "spwg";
-		fsl,data-width = <24>;
-		status = "okay";
-
-		port@1 {
-			reg = <1>;
-			lvds_out1: endpoint {
-				remote-endpoint = <&panel_lvds_in1>;
-			};
-		};
-	};
-};
-
-&mipi1_dphy {
-	status = "okay";
-};
-
-&mipi1_dsi_host {
-	status = "disabled";
-};
-
 &lpuart0 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_lpuart0>;
@@ -731,16 +725,29 @@
 };
 
 &amix {
+#ifdef ENABLE_SGTL5000
 	status = "okay";
+#else
+	status = "disabled";
+#endif
 };
 
 &asrc0 {
 	fsl,asrc-rate  = <48000>;
+#ifdef ENABLE_SGTL5000
 	status = "okay";
+#else
+	status = "disabled";
+#endif
 };
 
 &dsp {
-	compatible = "fsl,imx8qxp-dsp-v1";
+	memory-region = <&dsp_vdev0buffer>, <&dsp_vdev0vring0>,
+			<&dsp_vdev0vring1>, <&dsp_reserved>;
+	status = "okay";
+};
+
+&dsp_reserved {
 	status = "okay";
 };
 
@@ -752,7 +759,11 @@
 	assigned-clock-rates = <786432000>, <49152000>, <24000000>, <49152000>;
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_sai0>;
+#ifdef ENABLE_SGTL5000
 	status = "okay";
+#else
+	status = "disabled";
+#endif
 };
 
 &sai1 {
@@ -763,7 +774,11 @@
 	assigned-clock-rates = <786432000>, <49152000>, <24000000>, <49152000>;
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_sai1>;
+#ifdef ENABLE_SGTL5000
 	status = "okay";
+#else
+	status = "disabled";
+#endif
 };
 
 &lpspi3 {
@@ -809,6 +824,7 @@
 		#size-cells = <1>;
 		compatible = "jedec,spi-nor", "winbond,w25q64";
 		spi-max-frequency = <29000000>;
+		status = "disabled";
 	};
 
 	qspi_nor3: w25q64fwssig@3 {
@@ -817,6 +833,7 @@
 		#size-cells = <1>;
 		compatible = "jedec,spi-nor", "winbond,w25q64";
 		spi-max-frequency = <29000000>;
+		status = "disabled";
 	};
 #endif
 };
@@ -840,7 +857,7 @@
 	};
 
 	tpm: st33htph@2e {
-		compatible = "st,st33htpm-i2c";
+		compatible = "st,st33htpm-i2c", "tcg,tpm-tis-i2c";
 		reg= <0x2e>;
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_tpm>;
@@ -863,27 +880,24 @@
 	};
 };
 
+&hsio_phy {
+	fsl,hsio-cfg = "pciea-x2-pcieb";
+	fsl,refclk-pad-mode = "input";
+	status = "okay";
+};
+
 &pcieb{
-	compatible = "fsl,imx8qxp-pcie","snps,dw-pcie";
+	compatible = "fsl,imx8q-pcie", "snps,dw-pcie";
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_pcieb>;
 	//disable-gpio = <&gpio_exp2 0 GPIO_ACTIVE_LOW>; /* W_DISABLE1# */
 	reset-gpio = <&lsio_gpio4 0 GPIO_ACTIVE_LOW>;
 	ext_osc = <1>;
+	vpcie-supply = <&epdev_on>;
+	phys = <&hsio_phy 0 PHY_TYPE_PCIE 0>;
+	phy-names = "pcie-phy";
 	status = "okay";
 };
-
-#if 0
-&rpmsg{
-	/*
-	 * 64K for one rpmsg instance:
-	 */
-	vdev-nums = <2>;
-	reg = <0x0 0x90000000 0x0 0x20000>;
-	memory-region = <&vdevbuffer>;
-	status = "disabled";
-};
-#endif
 
 &usbphy1 {
 	fsl,tx-d-cal = <114>;
@@ -898,7 +912,6 @@
 	srp-disable;
 	hnp-disable;
 	adp-disable;
-	power-active-high;
 	disable-over-current;
 	status = "okay";
 };
@@ -908,10 +921,15 @@
 };
 
 &usbotg3 {
-	vbus-supply = <&reg_usb_otg2_vbus>;
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_usbotg3>;
+	status = "okay";
+};
+
+&usbotg3_cdns3 {
+	vbus-supply = <&reg_usb_otg2_vbus>;
 	dr_mode = "host";
+	disable-over-current;
 	status = "okay";
 };
 
@@ -947,52 +965,34 @@
 	status = "okay";
 };
 
-#if 0
-&vpu_decoder {
-	boot-region = <&decoder_boot>;
-	rpc-region = <&decoder_rpc>;
-	reg-csr = <0x2d040000>;
-	core_type = <1>;
+&vpu {
+	compatible = "nxp,imx8qxp-vpu";
 	status = "okay";
 };
 
-&vpu_encoder {
-	boot-region = <&encoder_boot>;
-	rpc-region = <&encoder_rpc>;
-	reserved-region = <&encoder_reserved>;
-	reg-rpc-system = <0x40000000>;
-	resolution-max = <1920 1920>;
-	mbox-names = "enc1_tx0", "enc1_tx1", "enc1_rx";
-	mboxes = <&mu1_m0 0 0
-		  &mu1_m0 0 1
-		  &mu1_m0 1 0>;
+&vpu_core0 {
+	reg = <0x2d040000 0x10000>;
+	memory-region = <&decoder_boot>, <&decoder_rpc>;
 	status = "okay";
-
-	core0@1020000 {
-		compatible = "fsl,imx8-mu1-vpu-m0";
-		reg = <0x1020000 0x20000>;
-		reg-csr = <0x1050000 0x10000>;
-		interrupts = <GIC_SPI 470 IRQ_TYPE_LEVEL_HIGH>;
-		fsl,vpu_ap_mu_id = <17>;
-		fw-buf-size = <0x200000>;
-		rpc-buf-size = <0x80000>;
-		print-buf-size = <0x80000>;
-	};
 };
-#endif
+
+&vpu_core1 {
+	reg = <0x2d050000 0x10000>;
+	memory-region = <&encoder_boot>, <&encoder_rpc>;
+	status = "okay";
+};
 
 &lvds_backlight0 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_ldb1>;
-	lvds-vcc-enable-gpios = <&lsio_gpio3 13 1>;
-	lvds-bkl-enable-gpios = <&lsio_gpio3 7 1>;
+	enable-gpios = <&lsio_gpio3 7 GPIO_ACTIVE_HIGH>;
 #if defined(LVDS_SINGLE_0)
 	status = "okay";
-#elif defined(LVDS_SINGLE_1)
-	status = "disabled";
-#else
+#elif defined(LVDS_DUAL_CHANNEL)
 	skip-gpios-init;
 	status = "okay";
+#else
+	status = "disabled";
 #endif
 };
 
@@ -1001,18 +1001,9 @@
 };
 
 &imx8_gpu_ss {
+	memory-region = <&gpu_reserved>;
 	status = "okay";
 };
-
-#if 0
-&isi_0 {
-	status = "okay";
-
-	cap_device {
-		status = "okay";
-	};
-};
-#endif
 
 &irqsteer_csi0 {
 	status = "okay";
@@ -1021,7 +1012,11 @@
 &mipi_csi_0 {
 	#address-cells = <1>;
 	#size-cells = <0>;
+#ifdef ENABLE_OV5640
 	status = "okay";
+#else
+	status = "disabled";
+#endif
 
 	/* Camera 0  MIPI CSI-2 (CSIS0) */
 	port@0 {
@@ -1032,12 +1027,6 @@
 		};
 	};
 };
-
-#if 0
-&cameradev {
-	status = "okay";
-};
-#endif
 
 &jpegdec {
 	status = "okay";
@@ -1068,7 +1057,11 @@
 		mclk = <24000000>;
 		mclk_source = <0>;
 		mipi_csi;
+#ifdef ENABLE_OV5640
 		status = "okay";
+#else
+		status = "disabled";
+#endif
 
 		port {
 			ov5640_mipi_ep: endpoint {
@@ -1242,8 +1235,8 @@
 
 	pinctrl_lpi2c1: lpi2c1grp {
 		fsl,pins = <
-			IMX8QXP_USB_SS3_TC1_ADMA_I2C1_SCL			0x06000021
-			IMX8QXP_USB_SS3_TC3_ADMA_I2C1_SDA			0x06000021
+			IMX8QXP_USB_SS3_TC1_ADMA_I2C1_SCL			0xc6000021 // open-drain enablement
+			IMX8QXP_USB_SS3_TC3_ADMA_I2C1_SDA			0xc6000021
 		>;
 	};
 
@@ -1431,6 +1424,17 @@
 };
 
 &{/system-controller/watchdog} {
-        status = "disabled";
+	status = "disabled";
 };
 
+&{/system-controller/rtc} { // Requires FW support (wake-up source)
+	status = "disabled";
+};
+
+&adma_pwm {
+	status = "disabled";
+};
+
+&adma_pwm_lpcg {
+	status = "disabled";
+};
