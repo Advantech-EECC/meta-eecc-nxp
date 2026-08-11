@@ -13,6 +13,7 @@ The following boards are supported by this layer:
 
  * ROM-2620-CD-A1 1GB (MACHINE=`rom2620-ed91` NXP i.MX 8ULP)
  * ROM-2820-CD-A1 2GB (`rom2820-ed93` NXP i.MX 93)
+ * ROM-5620-WU-A1/A2 2GB (`rom5620-db5901` NXP i.MX 8QuadXPlus)
  * ROM-5722-CQ-A1 6GB (`rom5722-db2510` NXP i.MX 8M Plus)
  * RSB-3720-CD/CQ-A1/A2 6GB A1,A2 (`rsb3720` `rsb3720-6g` NXP i.MX 8M Plus)
  * RSB-3720-CD/CQ-A2 4GB A2 (`rsb3720-4g` NXP i.MX 8M Plus)
@@ -20,7 +21,6 @@ The following boards are supported by this layer:
 Preliminary support:
 
  * AOM-5521 8GB (MACHINE=`aom5521-db2510` NXP i.MX 95)
- * ROM-5620-WU-A1/A2 2GB (`rom5620-db5901` NXP i.MX 8QuadXPlus)
  * ROM-5720-CD/CQ-A2 2GB (`rom5720-db5901` NXP i.MX 8M)
  * ROM-5721-CD-A1/A2 1GB (`rom5721-db5901-1g` NXP i.MX 8M Mini)
  * ROM-5721-CQ-A1/A2 2GB (`rom5721-db5901-2g` NXP i.MX 8M Mini)
@@ -103,31 +103,29 @@ ROM-5620 (on SOM-DB5901 carrier board)
 |SDHC2 |  ✅ | SD Card |
 |ETH0 |  ✅ | 1Gbps |
 |ETH1 |  ✅ | 1Gbps |
-|USB1 | ❌ | USB 3.0 |
-|USB2 | ❌ | USB 2.0 |
+|USB1 | ⚠️ | USB 3.0 (only USB 3.0 devices, after boot) |
+|USB2 | ✅ | USB 2.0 |
 |USB3 | ❌ | USB-C |
-|USB-OTG | ❌ |  |
-|HDMI |  ❌ |  |
-|MIPI-LVDS | ❌ | (DSI to LVDS bridge) |
+|USB-OTG | ⚠️  | Not tested |
+|MIPI-LVDS | ✅ | Tested with AUO7/IDK-1107W (single channel) and AUO215/G215HVN01 (dual) |
 |UART1| ✅ | COM3 Linux Console (2-wire) |
-|UART2| ⚠️  | Not tested - COM2 (2-wire) |
-|UART3| ⚠️  | Not tested - COM0 (4-wire) |
-|UART4| ⚠️  | Not tested - COM1 (2-wire) |
+|UART2| ✅ | COM0 (4-wire) |
+|UART3| ✅ | COM1 (2-wire) |
 |I2C1 | ✅  |  |
 |I2C2 | ✅  |  |
 |I2C3 | ✅  |  |
 |I2C4 | ✅  |  |
-|M.2 | ❌  |  |
-|PWM1 | ❌ |  |
-|PWM2 | ❌ |  |
-|PWM3 | ❌ |  |
-|PWM4 | ❌ |  |
+|M.2 | ⚠️  | Not tested (PCI enumerated + COM0 can be routed to the socket) |
+|PWM1 | ⚠️  | Enumerated but not tested |
+|PWM2 | ⚠️  | Enumerated but not tested |
 |QSPI0| ⚠️ | Not tested - n25q256a (jedec,spi-nor) |
-|GPIO | ⚠️ | Not tested |
-|RTC0 | ⚠️ | External I2C RTC (rx8900) |
-|RTC1 | ⚠️  | Internal RTC, supports timer wake events |
-|TPM | ❌ | |
-|Watchdog | ❌ | External I2C Advantech watchdog (MSP430-based) |
+|CAN0| ✅ |  |
+|CAN1| ✅ |  |
+|GPIO-EXP1 | ✅ | Internal use (PCIE, buttons) |
+|GPIO-EXP2 | ⚠️ | GPIO header - Not tested (cm40_i2c / i2c-4, 0x70) |
+|RTC | ✅ | External I2C RTC (rx8900) |
+|TPM | ✅ | Loaded as module |
+|Watchdog | ✅ | External I2C Advantech watchdog (MSP430-based) |
 |Secure Boot | ✅ | Tested (AHAB ecc256-CA-sha256 + SHA512 SRK certificate table hash) |
 
 ROM-5720 (on SOM-DB5901 carrier board)

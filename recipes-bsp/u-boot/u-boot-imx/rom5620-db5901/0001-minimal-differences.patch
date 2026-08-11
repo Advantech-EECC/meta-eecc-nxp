@@ -3,7 +3,7 @@ Upstream-Status: Inappropriate [other]
 Signed-off-by: F. Aragon <francisco.aragon@advantech.de>
 
 diff --git a/arch/arm/dts/fsl-imx8qxp-mek-u-boot.dtsi b/arch/arm/dts/fsl-imx8qxp-mek-u-boot.dtsi
-index 5169ba474b0..c02651f4f8c 100644
+index 5169ba474b0..6200f31fdd5 100644
 --- a/arch/arm/dts/fsl-imx8qxp-mek-u-boot.dtsi
 +++ b/arch/arm/dts/fsl-imx8qxp-mek-u-boot.dtsi
 @@ -3,6 +3,8 @@
@@ -28,28 +28,27 @@ index 5169ba474b0..c02651f4f8c 100644
  };
  
  &crypto {
-@@ -279,10 +285,12 @@
- 	compatible = "fsl,imx8qm-lpi2c", "fsl,imx-virt-i2c";
+@@ -296,6 +302,10 @@
+ 	phy-mode = "rgmii-id";
  };
  
-+#if 0
- &{/i2c@5a810000/i2cswitch@71} {
- 	compatible = "nxp,pca9646", "fsl,imx-virt-i2c-mux";
- 	virtual-bus-seq = <12>;
- };
-+#endif
- 
- &wu {
- 	bootph-pre-ram;
++&pcieb {
++	bootph-pre-ram;
++};
++
+ &ethphy0 {
+ 	vddio0: vddio-regulator {
+ 		regulator-name = "VDDIO";
 diff --git a/arch/arm/dts/fsl-imx8qxp-mek.dts b/arch/arm/dts/fsl-imx8qxp-mek.dts
-index 0e955dd3ee2..e1a397800ef 100644
+index 0e955dd3ee2..4ff45ab63b4 100644
 --- a/arch/arm/dts/fsl-imx8qxp-mek.dts
 +++ b/arch/arm/dts/fsl-imx8qxp-mek.dts
-@@ -7,11 +7,15 @@
+@@ -7,11 +7,16 @@
  
  #include "fsl-imx8qxp.dtsi"
  
 +#define SDHC_LOW_SPEED_ONLY
++#define SDHC_DISABLE_WP
 +
  / {
 -	model = "NXP i.MX8QXP MEK";
@@ -62,7 +61,7 @@ index 0e955dd3ee2..e1a397800ef 100644
  		i2c4 = &bb_i2c1;
  		i2c5 = &mfi_i2c1;
  		i2c6 = &i2cexp1_i2c1;
-@@ -19,6 +23,7 @@
+@@ -19,6 +24,7 @@
  		gpio8 = &pca9557_a;
  		gpio9 = &pca9557_b;
  	};
@@ -70,16 +69,16 @@ index 0e955dd3ee2..e1a397800ef 100644
  
  	chosen {
  		bootargs = "console=ttyLP0,115200 earlycon";
-@@ -45,7 +50,7 @@
+@@ -45,7 +51,7 @@
  			regulator-min-microvolt = <3300000>;
  			regulator-max-microvolt = <3300000>;
  			regulator-name = "mpcie_3v3";
 -			gpio = <&pca9557_a 2 GPIO_ACTIVE_HIGH>;
-+			reset-gpio = <&gpio4 0 GPIO_ACTIVE_LOW>;
++			gpio = <&pca9557_a 0 GPIO_ACTIVE_HIGH>;
  			enable-active-high;
  			regulator-always-on;
  		};
-@@ -56,7 +61,7 @@
+@@ -56,7 +62,7 @@
  			regulator-name = "usb_otg1_vbus";
  			regulator-min-microvolt = <5000000>;
  			regulator-max-microvolt = <5000000>;
@@ -88,7 +87,7 @@ index 0e955dd3ee2..e1a397800ef 100644
  			enable-active-high;
  		};
  
-@@ -191,7 +196,7 @@
+@@ -191,7 +197,7 @@
  				SC_P_QSPI0B_SS1_B_LSIO_QSPI0B_SS1_B	0x06000021
  			>;
  		};
@@ -97,7 +96,7 @@ index 0e955dd3ee2..e1a397800ef 100644
  		pinctrl_i2c0_mipi_lvds0: mipi_lvds0_i2c0_grp {
  			fsl,pins = <
  				SC_P_MIPI_DSI0_I2C0_SCL_MIPI_DSI0_I2C0_SCL 0xc6000020
-@@ -205,6 +210,7 @@
+@@ -205,6 +211,7 @@
  				SC_P_MIPI_DSI1_I2C0_SDA_MIPI_DSI1_I2C0_SDA 0xc6000020
  			>;
  		};
@@ -105,12 +104,9 @@ index 0e955dd3ee2..e1a397800ef 100644
  	};
  };
  
-@@ -254,10 +260,11 @@
- 	pinctrl-names = "default";
- 	pinctrl-0 = <&pinctrl_lpi2c1>;
+@@ -256,8 +263,9 @@
  	status = "okay";
--
-+#if 0
+ 
  	i2cswitch@71 {
 -		compatible = "nxp,pca9646";
 +		compatible = "nxp,pca9646", "fsl,imx-virt-i2c-mux";
@@ -119,11 +115,8 @@ index 0e955dd3ee2..e1a397800ef 100644
  		u-boot,i2c-offset-len = <0>;
  		#address-cells = <1>;
  		#size-cells = <0>;
-@@ -299,8 +306,10 @@
- 			};
- 		};
+@@ -301,6 +309,7 @@
  	};
-+#endif
  };
  
 +#if 0
@@ -138,9 +131,15 @@ index 0e955dd3ee2..e1a397800ef 100644
  
  &usdhc1 {
  	pinctrl-names = "default", "state_100mhz", "state_200mhz";
-@@ -352,6 +362,9 @@
+@@ -350,8 +360,15 @@
+ 	pinctrl-2 = <&pinctrl_usdhc2>, <&pinctrl_usdhc2_gpio>;
+ 	bus-width = <4>;
  	cd-gpios = <&gpio4 22 GPIO_ACTIVE_LOW>;
++#ifdef SDHC_DISABLE_WP
++        disable-wp;
++#else
  	wp-gpios = <&gpio4 21 GPIO_ACTIVE_HIGH>;
++#endif
  	vmmc-supply = <&reg_usdhc2_vmmc>;
 +#ifdef SDHC_LOW_SPEED_ONLY
 +	no-1-8-v;
@@ -148,7 +147,7 @@ index 0e955dd3ee2..e1a397800ef 100644
  	status = "okay";
  };
  
-@@ -372,9 +385,11 @@
+@@ -372,9 +389,11 @@
  	fsl,ar8031-phy-fixup;
  	fsl,magic-packet;
  	status = "okay";
@@ -160,7 +159,7 @@ index 0e955dd3ee2..e1a397800ef 100644
  
  	mdio {
  		#address-cells = <1>;
-@@ -419,6 +434,7 @@
+@@ -419,6 +438,7 @@
  	status = "okay";
  };
  
@@ -168,7 +167,7 @@ index 0e955dd3ee2..e1a397800ef 100644
  &ldb1_phy {
  	status = "okay";
  };
-@@ -456,3 +472,4 @@
+@@ -456,3 +476,4 @@
  		};
  	};
  };
@@ -462,7 +461,7 @@ index 88d6955a9ef..f7f806d982c 100644
  SOC_TYPE IMX8QX
  /* Append seco container image */
 diff --git a/configs/imx8qxp_mek_defconfig b/configs/imx8qxp_mek_defconfig
-index f3fd967c409..2daa355d99a 100644
+index f3fd967c409..1c0ab7d84fa 100644
 --- a/configs/imx8qxp_mek_defconfig
 +++ b/configs/imx8qxp_mek_defconfig
 @@ -8,11 +8,11 @@ CONFIG_SYS_MEMTEST_END=0xB0000000
@@ -479,7 +478,15 @@ index f3fd967c409..2daa355d99a 100644
  CONFIG_DM_GPIO=y
  CONFIG_DEFAULT_DEVICE_TREE="fsl-imx8qxp-mek"
  CONFIG_SPL_TEXT_BASE=0x100000
-@@ -182,7 +182,7 @@ CONFIG_FASTBOOT_UUU_SUPPORT=y
+@@ -98,6 +98,7 @@ CONFIG_FSL_USDHC=y
+ CONFIG_MMC_IO_VOLTAGE=y
+ CONFIG_MMC_UHS_SUPPORT=y
+ CONFIG_MMC_HS400_SUPPORT=y
++CONFIG_MMC_BROKEN_CD=y
+ CONFIG_EFI_PARTITION=y
+ CONFIG_PHYLIB=y
+ CONFIG_PHY_ADDR_ENABLE=y
+@@ -182,7 +183,7 @@ CONFIG_FASTBOOT_UUU_SUPPORT=y
  CONFIG_FASTBOOT_BUF_ADDR=0x82800000
  CONFIG_FASTBOOT_BUF_SIZE=0x40000000
  CONFIG_FASTBOOT_FLASH=y
@@ -488,3 +495,10 @@ index f3fd967c409..2daa355d99a 100644
  
  CONFIG_SYS_I2C_IMX_VIRT_I2C=y
  CONFIG_I2C_MUX_IMX_VIRT=y
+@@ -215,3 +216,6 @@ CONFIG_SYS_WHITE_ON_BLACK=y
+ CONFIG_SPLASH_SCREEN=y
+ CONFIG_SPLASH_SCREEN_ALIGN=y
+ CONFIG_CMD_BMP=y
++
++CONFIG_CMD_PART=y
++CONFIG_RANDOM_UUID=y

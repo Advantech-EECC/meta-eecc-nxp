@@ -1,7 +1,6 @@
 require common/watchdog_advantech.inc
 require common/rtc-s35390a.inc
 require common/tpm-st33htpm.inc
-require common/usb-hub-usb251xb-i2c.inc
 
 SRC_URI += " \
 	file://${MACHINE}.dts;subdir=arch/arm64/boot/dts/freescale \
