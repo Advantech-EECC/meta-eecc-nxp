@@ -1117,10 +1117,6 @@
 
 };
 
-&vpu {
-	status = "okay";
-};
-
 &gpu {
 	status = "okay";
 };
