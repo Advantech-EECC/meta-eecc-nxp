@@ -24,6 +24,9 @@ Fix by:
  drivers/net/phy/realtek/realtek_main.c | 16 +++++++++++++++-
  1 file changed, 15 insertions(+), 1 deletion(-)
 
+Upstream-Status: Inappropriate [other]
+Signed-off-by: F. Aragon <francisco.aragon@advantech.de>
+
 diff --git a/drivers/net/phy/realtek/realtek_main.c b/drivers/net/phy/realtek/realtek_main.c
 index 7c3d277efaf0..a6ddb61d3bf0 100644
 --- a/drivers/net/phy/realtek/realtek_main.c
