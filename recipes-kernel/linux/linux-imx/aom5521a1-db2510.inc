@@ -12,4 +12,11 @@ SRC_URI += " \
 
 do_configure:prepend() {
     echo 'dtb-$(CONFIG_ARCH_MXC) += imx95-aom5521-a1.dtb' >> ${S}/arch/arm64/boot/dts/freescale/Makefile
+    echo 'dtb-$(CONFIG_ARCH_MXC) += imx95-aom5521-a1-auog101uan02.dtb' >> ${S}/arch/arm64/boot/dts/freescale/Makefile
+    echo 'dtb-$(CONFIG_ARCH_MXC) += imx95-aom5521-a1-lvds-dual.dtb' >> ${S}/arch/arm64/boot/dts/freescale/Makefile
+    echo 'dtb-$(CONFIG_ARCH_MXC) += imx95-aom5521-a1-lvds-auo.dtb' >> ${S}/arch/arm64/boot/dts/freescale/Makefile
+    echo 'dtb-$(CONFIG_ARCH_MXC) += imx95-aom5521-a1-lvds0-auog070vw01-v1.dtb' >> ${S}/arch/arm64/boot/dts/freescale/Makefile
+    echo 'dtb-$(CONFIG_ARCH_MXC) += imx95-aom5521-a1-lvds1-auo.dtb' >> ${S}/arch/arm64/boot/dts/freescale/Makefile
+    echo 'dtb-$(CONFIG_ARCH_MXC) += imx95-aom5521-a1-lvds1-auog070vw01-v1.dtb' >> ${S}/arch/arm64/boot/dts/freescale/Makefile
+    echo 'dtb-$(CONFIG_ARCH_MXC) += imx95-aom5521-a1-m2-sdio.dtb' >> ${S}/arch/arm64/boot/dts/freescale/Makefile
 }
