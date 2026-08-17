@@ -307,6 +307,3 @@ AOM-5521 A1 (on SOM-DB2510 carrier board)
 | M.2         | ⚠️      | Not tested                                                                   |
 | mini PCIe   | ⚠️      | Not tested                                                                   |
 | Secure Boot | ⚠️      | Not tested                                                                   |
-
-Note: This is preliminary support for AOM-5521. All features require testing and validation.
- 
