@@ -1,4 +1,5 @@
 require watchdog/watchdog_advantech.inc
+require common/tpm-st33htpm.inc
 
 SRC_URI += " \
     file://ecu150a1.dts;subdir=arch/arm64/boot/dts/freescale \
