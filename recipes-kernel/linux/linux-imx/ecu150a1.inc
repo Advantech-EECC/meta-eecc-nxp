@@ -1,11 +1,11 @@
 require common/watchdog_advantech.inc
+require common/tpm-st33htpm.inc
 
 SRC_URI += " \
     file://ecu150a1.dts;subdir=arch/arm64/boot/dts/freescale \
     file://usb_wdm.cfg \
     file://fintek-f81603.cfg \
     file://rtl8169.cfg \
-    file://tpm.cfg \
 "
 
 # Hontek RTC driver is needed for the ECU150A1 board, but it is not yet upstreamed. 
