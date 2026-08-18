@@ -5,6 +5,7 @@ SRC_URI += " \
     file://usb_wdm.cfg \
     file://fintek-f81603.cfg \
     file://rtl8169.cfg \
+    file://tpm.cfg \
 "
 
 # Hontek RTC driver is needed for the ECU150A1 board, but it is not yet upstreamed. 
