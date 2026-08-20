@@ -4,7 +4,7 @@ Advantech BSP for NXP based boards
 This reference BSP adds minimalistic changes to the NXP layers to support Advantech boards. Note that some boards may have only limited features with this BSP. However, more features can be added in another layer on top of this layer.
 
 For build instructions, check the [README.md in the Advantech fork of the NXP imx-manifest repository](https://github.com/Advantech-EECC/imx-manifest), which adds manifests including this layer.
-
+ 
 
 Supported Boards
 ================
@@ -17,11 +17,10 @@ The following boards are supported by this layer:
  * ROM-5722-CQ-A1 6GB (`rom5722-db2510` NXP i.MX 8M Plus)
  * RSB-3720-CD/CQ-A1/A2 6GB A1,A2 (`rsb3720` `rsb3720-6g` NXP i.MX 8M Plus)
  * RSB-3720-CD/CQ-A2 4GB A2 (`rsb3720-4g` NXP i.MX 8M Plus)
- * AOM-5521 A1 (`aom5521a1` NXP i.MX 95)
+ * AOM-5521 A1 (`aom5521a1-db2510` NXP i.MX 95)
 
 Preliminary support:
 
- * AOM-5521 8GB (MACHINE=`aom5521-db2510` NXP i.MX 95)
  * ROM-5720-CD/CQ-A2 2GB (`rom5720-db5901` NXP i.MX 8M)
  * ROM-5721-CD-A1/A2 1GB (`rom5721-db5901-1g` NXP i.MX 8M Mini)
  * ROM-5721-CQ-A1/A2 2GB (`rom5721-db5901-2g` NXP i.MX 8M Mini)
