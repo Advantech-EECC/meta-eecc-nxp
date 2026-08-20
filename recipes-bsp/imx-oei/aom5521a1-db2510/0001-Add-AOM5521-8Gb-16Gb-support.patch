@@ -1,7 +1,11 @@
-From 326e1fe00638a0c0e40e014e6a82a8e67d7955b7 Mon Sep 17 00:00:00 2001
-From: "Mikhail Tsukerman" <mikhail.tsukerman@advantech.com>
+From 69fa627bd3f65908c89193dd6aeb7bde9f95eeb6 Mon Sep 17 00:00:00 2001
+From: Mikhail Tsukerman <mikhail.tsukerman@advantech.com>
 Date: Thu, 16 Jul 2026 11:22:42 +0200
-Subject: [PATCH] Add AOM5521 8Gb/16Gb support
+Subject: [PATCH] Add AOM5521A1 16G/8G LPDDR5 board ports for i.MX95
+
+Reference to original changes
+https://github.com/ADVANTECH-Corp/meta-advantech2/tree/aim38-scarthgap-6.6.36/meta-fsl-imx/recipes-bsp/imx-oei/files
+
 Upstream-Status: Inappropriate
 ---
  Makefile                                      |     2 +

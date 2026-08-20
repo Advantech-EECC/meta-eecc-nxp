@@ -1,8 +1,11 @@
-From 393501ec9c909fb4b6b93995eda794be3cbdbed3 Mon Sep 17 00:00:00 2001
-From: "Mikhail Tsukerman" <mikhail.tsukerman@advantech.com>
-Date: Thu, 16 Jul 2026 11:34:19 +0200
+From 93768b4555355d6b1980766b09b0f71ee82c7360 Mon Sep 17 00:00:00 2001
+From: Mikhail Tsukerman <mikhail.tsukerman@advantech.com>
+Date: Wed, 19 Aug 2026 16:19:13 +0200
 Subject: [PATCH] AOM5521 A1 Support
-based on https://github.com/ADVANTECH-Corp/imx-sm
+
+Forward port changes from
+https://github.com/ADVANTECH-Corp/imx-sm/tree/lf-6.6.52-2.2.0-imx95-aom5521a1
+
 Upstream-Status: Inappropriate
 ---
  boards/mcimx95evk/sm/brd_sm_handlers.c | 146 ++++++++++++++++++++-----
