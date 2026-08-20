@@ -1,8 +1,13 @@
-From 83904dbe2575a37fa1a97474aec147a1daf9cd36 Mon Sep 17 00:00:00 2001
-From: "Mikhail Tsukerman" <mikhail.tsukerman@advantech.com>
-Date: Wed, 15 Jul 2026 15:56:16 +0000
+From b939dd987f74d1d25be90ab10f9685c105b5d523 Mon Sep 17 00:00:00 2001
+From: Mikhail Tsukerman <mikhail.tsukerman@advantech.com>
+Date: Wed, 19 Aug 2026 16:12:34 +0200
 Subject: [PATCH] AOM5521 A1 Support
-based on https://github.com/ADVANTECH-Corp/imx-sm
+
+https://github.com/Advantech-EECC/imx-system-manager/tree/adv-lf-6.6.52-2.2.2
+
+Forward port changes from
+https://github.com/ADVANTECH-Corp/imx-sm/tree/lf-6.6.52-2.2.0-imx95-aom5521a1
+
 Upstream-Status: Inappropriate
 ---
  .gitignore                             |   1 +
