@@ -1,7 +1,10 @@
-From eacd1036e9d90bc9c8e76e423b2750e32c5c78bd Mon Sep 17 00:00:00 2001
-From: "Mikhail Tsukerman" <mikhail.tsukerman@advantech.com>
-Date: Thu, 16 Jul 2026 17:00:35 +0000
-Subject: [PATCH] Restore i.MX95 A0/A1 (Rev A) silicon support
+From 70e15770c2e7de3ff2b6f58ef5873e3dd287751a Mon Sep 17 00:00:00 2001
+From: Mikhail Tsukerman <mikhail.tsukerman@advantech.com>
+Date: Wed, 19 Aug 2026 16:22:35 +0200
+Subject: [PATCH 2/2] Restore i.MX95 A0/A1 (Rev A) silicon support
+
+Revert https://github.com/Advantech-EECC/imx-system-manager/commit/862611088ba75b2b8f020ba7de0a4233287e9c54
+
 Upstream-Status: Inappropriate
 ---
  .gitignore                            |  1 +
