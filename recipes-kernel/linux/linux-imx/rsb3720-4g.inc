@@ -1,1 +1,1 @@
-rsb3720-6g.inc
+rsb3720.inc
