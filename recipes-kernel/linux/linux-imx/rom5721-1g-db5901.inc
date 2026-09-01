@@ -1,1 +1,1 @@
-rom5721-2g-db5901.inc
+rom5721-db5901.inc
