@@ -1,0 +1,17 @@
+Observation: ad hoc patch
+Upstream-Status: Inappropriate [other]
+Signed-off-by: F. Aragon <francisco.aragon@advantech.de>
+
+diff --git a/core/arch/arm/plat-imx/conf.mk b/core/arch/arm/plat-imx/conf.mk
+index f164e353c..e4b7d8046 100644
+--- a/core/arch/arm/plat-imx/conf.mk
++++ b/core/arch/arm/plat-imx/conf.mk
+@@ -424,7 +424,7 @@ CFG_UART_BASE ?= UART7_BASE
+ endif
+ 
+ ifneq (,$(filter $(PLATFORM_FLAVOR),mx8mqevk))
+-CFG_DDR_SIZE ?= 0xc0000000
++CFG_DDR_SIZE ?= 0x80000000
+ CFG_UART_BASE ?= UART1_BASE
+ endif
+ 
