@@ -1,0 +1,32 @@
+/ {
+	reg_usb_otg_vbus: regulator-usb-vbus {
+		compatible = "regulator-fixed";
+		regulator-name = "usb_otg_vbus";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		gpio = <&gpio_exp2 13 GPIO_ACTIVE_HIGH>;
+		enable-active-high;
+	};
+
+	extcon_usb_otg: extcon_usb_otg@1 {
+		compatible = "linux,extcon-usb-gpio";
+		id-gpios = <&gpio4 14 GPIO_ACTIVE_HIGH>;
+	};
+};
+
+&usb2 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_usb_otg>;
+	dr_mode = "otg";
+	extcon = <0>, <&extcon_usb_otg>; /* first extcon set <0> because no VBUS_DETECT */
+	vbus-supply = <&reg_usb_otg_vbus>;
+	status = "okay";
+};
+
+&scmi_iomuxc {
+	pinctrl_usb_otg: usb_otg_grp {
+		fsl,pins = <
+			IMX95_PAD_ENET2_MDC__GPIO4_IO_BIT14		0x31e
+		>;
+	};
+};

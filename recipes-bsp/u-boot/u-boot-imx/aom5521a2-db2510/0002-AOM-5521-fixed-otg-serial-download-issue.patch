@@ -1,0 +1,213 @@
+From 0a63d25dd68dd794f5f8707731e8df715ee97637 Mon Sep 17 00:00:00 2001
+From: SeanChuang2 <dinner0828@gmail.com>
+Date: Wed, 9 Jul 2025 17:40:14 +0800
+Subject: [PATCH] fixed otg serial download issue
+
+Upstream-Status: Inappropriate [other]
+---
+ arch/arm/dts/imx95-aom5521-a2-local.dtsi  | 66 ++++++++++++++++++-----
+ arch/arm/dts/imx95-aom5521-a2-u-boot.dtsi |  2 +
+ arch/arm/dts/imx95-aom5521-a2.dts         |  7 +--
+ configs/imx95_aom5521a2_8G_defconfig      |  2 +-
+ drivers/usb/dwc3/gadget.c                 |  2 +
+ 5 files changed, 62 insertions(+), 17 deletions(-)
+
+diff --git a/arch/arm/dts/imx95-aom5521-a2-local.dtsi b/arch/arm/dts/imx95-aom5521-a2-local.dtsi
+index a6c569bc8ed..8a7f44125da 100644
+--- a/arch/arm/dts/imx95-aom5521-a2-local.dtsi
++++ b/arch/arm/dts/imx95-aom5521-a2-local.dtsi
+@@ -63,6 +63,28 @@
+ 		vin-supply = <&reg_serdes_stby>;
+ 		gpio = <&i2c5_pcal6408 3 GPIO_ACTIVE_LOW>;
+ 	};
++
++	reg_1p8v: regulator-1p8v {
++		compatible = "regulator-fixed";
++		regulator-max-microvolt = <1800000>;
++		regulator-min-microvolt = <1800000>;
++		regulator-name = "+V1.8_SW";
++	};
++
++	reg_usb_otg_vbus: regulator-usb-vbus {
++		compatible = "regulator-fixed";
++		regulator-name = "usb_otg_vbus";
++		regulator-min-microvolt = <5000000>;
++		regulator-max-microvolt = <5000000>;
++		gpio = <&gpio_exp2 13 GPIO_ACTIVE_HIGH>;
++		enable-active-high;
++		regulator-always-on;
++	};
++
++	extcon_usb_otg: extcon_usb_otg@1 {
++		compatible = "linux,extcon-usb-gpio";
++		id-gpios = <&gpio4 14 GPIO_ACTIVE_HIGH>;
++	};
+ };
+ 
+ &lpi2c2 {
+@@ -74,6 +96,20 @@
+ 	pinctrl-1 = <&pinctrl_lpi2c2>;
+ 	status = "okay";
+ 
++	gpio_exp2: pca6416@21 {
++		compatible = "ti,tca6416";
++		#gpio-cells = <2>;
++		gpio-controller;
++		reg = <0x21>;
++		interrupt-controller;
++		#interrupt-cells = <2>;
++		interrupt-parent = <&gpio2>;
++		interrupts = <23 IRQ_TYPE_LEVEL_LOW>;
++		pinctrl-names = "default";
++		pinctrl-0 = <&pinctrl_gpioexp2>;
++		vcc-supply = <&reg_1p8v>;
++	};
++
+ 	adp5585gpio: gpio@34 {
+ 		compatible = "adi,adp5585";
+ 		reg = <0x34>;
+@@ -100,6 +136,7 @@
+ 	};
+ };
+ 
++/*
+ &lpi2c7 {
+ 	ptn5110: tcpc@50 {
+ 		compatible = "nxp,ptn5110";
+@@ -129,6 +166,7 @@
+ 		};
+ 	};
+ };
++*/
+ 
+ &usb2 {
+ 	dr_mode = "host";
+@@ -150,20 +188,10 @@
+ 
+ &usb3_dwc3 {
+ 	dr_mode = "otg";
+-	hnp-disable;
+-	srp-disable;
+-	adp-disable;
+-	usb-role-switch;
+-	role-switch-default-mode = "none";
+-	snps,dis-u1-entry-quirk;
+-	snps,dis-u2-entry-quirk;
++	pinctrl-0 = <&pinctrl_usb_otg>;
++	extcon = <&extcon_usb_otg>;
++	vbus-supply = <&reg_usb_otg_vbus>;
+ 	status = "okay";
+-
+-	port {
+-		usb3_drd_sw: endpoint {
+-			remote-endpoint = <&typec_dr_sw>;
+-		};
+-	};
+ };
+ 
+ &enetc_port0 {
+@@ -217,12 +245,24 @@
+ 		>;
+ 	};
+ 
++	pinctrl_gpioexp2: gpioexp2grp {
++		fsl,pins = <
++			IMX95_PAD_GPIO_IO23__GPIO2_IO_BIT23			0x31e
++		>;
++	};
++
+ 	pinctrl_ptn5110: ptn5110grp {
+ 		fsl,pins = <
+ 			IMX95_PAD_GPIO_IO34__GPIO5_IO_BIT14			0x31e
+ 		>;
+ 	};
+ 
++	pinctrl_usb_otg: usb_otg_grp {
++		fsl,pins = <
++			IMX95_PAD_ENET2_MDC__GPIO4_IO_BIT14			0x31e
++		>;
++	};
++
+ 	pinctrl_emdio: emdiogrp{
+ 		fsl,pins = <
+ 			IMX95_PAD_ENET1_MDC__NETCMIX_TOP_NETC_MDC		0x57e
+diff --git a/arch/arm/dts/imx95-aom5521-a2-u-boot.dtsi b/arch/arm/dts/imx95-aom5521-a2-u-boot.dtsi
+index 4faa13e9e22..45967c73835 100644
+--- a/arch/arm/dts/imx95-aom5521-a2-u-boot.dtsi
++++ b/arch/arm/dts/imx95-aom5521-a2-u-boot.dtsi
+@@ -106,10 +106,12 @@
+ 	label = "i2c5_io";
+ };
+ 
++/*
+ &i2c6_pcal6416 {
+ 	compatible = "ti,tca6416";
+ 	label = "i2c6_io";
+ };
++*/
+ 
+ &flexspi1 {
+ 	bootph-pre-ram;
+diff --git a/arch/arm/dts/imx95-aom5521-a2.dts b/arch/arm/dts/imx95-aom5521-a2.dts
+index 9039694c322..1bceac0f6e7 100644
+--- a/arch/arm/dts/imx95-aom5521-a2.dts
++++ b/arch/arm/dts/imx95-aom5521-a2.dts
+@@ -274,7 +274,7 @@
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&pinctrl_lpi2c6>;
+ 	status = "okay";
+-
++/*
+ 	i2c6_pcal6416: gpio@21 {
+ 		compatible = "nxp,pcal6416";
+ 		reg = <0x21>;
+@@ -288,6 +288,7 @@
+ 		pinctrl-0 = <&pinctrl_pcal6416>;
+ 		vcc-supply = <&reg_3p3v>;
+ 	};
++*/
+ };
+ 
+ &lpi2c7 {
+@@ -508,13 +509,13 @@
+ 			IMX95_PAD_GPIO_IO35__HSIOMIX_TOP_PCIE2_CLKREQ_B		0x4000031e
+ 		>;
+ 	};
+-
++/*
+ 	pinctrl_pcal6416: pcal6416grp {
+ 		fsl,pins = <
+ 			IMX95_PAD_CCM_CLKO3__GPIO4_IO_BIT28			0x31e
+ 		>;
+ 	};
+-
++*/
+ 	pinctrl_pdm: pdmgrp {
+ 		fsl,pins = <
+ 			IMX95_PAD_PDM_CLK__AONMIX_TOP_PDM_CLK				0x31e
+diff --git a/configs/imx95_aom5521a2_8G_defconfig b/configs/imx95_aom5521a2_8G_defconfig
+index b2c66ca7bca..c74c1295810 100644
+--- a/configs/imx95_aom5521a2_8G_defconfig
++++ b/configs/imx95_aom5521a2_8G_defconfig
+@@ -14,7 +14,7 @@ CONFIG_ENV_OFFSET=0x700000
+ CONFIG_IMX_CONFIG="arch/arm/mach-imx/imx9/scmi/imximage.cfg"
+ CONFIG_DM_GPIO=y
+ CONFIG_DEFAULT_DEVICE_TREE="imx95-aom5521-a2"
+-CONFIG_USB_TCPC=y
++# CONFIG_USB_TCPC is not set
+ CONFIG_TARGET_IMX95_AOM5521A2_8G=y
+ CONFIG_OF_LIBFDT_OVERLAY=y
+ CONFIG_SYS_MONITOR_LEN=524288
+diff --git a/drivers/usb/dwc3/gadget.c b/drivers/usb/dwc3/gadget.c
+index 6421eaaac50..c1bf63f3596 100644
+--- a/drivers/usb/dwc3/gadget.c
++++ b/drivers/usb/dwc3/gadget.c
+@@ -1459,6 +1459,8 @@ static int dwc3_gadget_pullup(struct usb_gadget *g, int is_on)
+ 	ret = dwc3_gadget_run_stop(dwc, is_on, false);
+ 	spin_unlock_irqrestore(&dwc->lock, flags);
+ 
++	udelay(6000); // Fixed OTG device mode issue
++
+ 	return ret;
+ }
+ 

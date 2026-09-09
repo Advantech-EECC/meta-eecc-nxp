@@ -1,0 +1,22 @@
+From 9d6d1294521c2fbf0ad7fae6929eaf86e8935331 Mon Sep 17 00:00:00 2001
+From: SeanChuang2 <dinner0828@gmail.com>
+Date: Tue, 3 Feb 2026 14:42:26 +0800
+Subject: [PATCH] driver: Move USB2_BOOT handling from evk to advantech board
+
+Upstream-Status: Inappropriate [other]
+---
+ board/advantech/imx95_aom5521a2/spl.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/board/advantech/imx95_aom5521a2/spl.c b/board/advantech/imx95_aom5521a2/spl.c
+index 8834a6855ae..67b387bc4c1 100644
+--- a/board/advantech/imx95_aom5521a2/spl.c
++++ b/board/advantech/imx95_aom5521a2/spl.c
+@@ -27,6 +27,7 @@ int spl_board_boot_device(enum boot_device boot_dev_spl)
+ 	case MMC2_BOOT:
+ 		return BOOT_DEVICE_MMC2;
+ 	case USB_BOOT:
++	case USB2_BOOT:
+ 		return BOOT_DEVICE_BOARD;
+ 	case QSPI_BOOT:
+ 		return BOOT_DEVICE_SPI;

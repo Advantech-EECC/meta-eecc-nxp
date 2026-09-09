@@ -1,0 +1,22 @@
+From 6ea522894071a3a4479743c4e6831374b2331874 Mon Sep 17 00:00:00 2001
+From: SeanChuang2 <dinner0828@gmail.com>
+Date: Thu, 24 Jul 2025 13:23:43 +0800
+Subject: [PATCH] config: Enable eth2 MAC address write method
+
+Upstream-Status: Inappropriate [other]
+---
+ include/configs/imx95_aom5521.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/include/configs/imx95_aom5521.h b/include/configs/imx95_aom5521.h
+index 2248fdb3fda..641aed9509c 100644
+--- a/include/configs/imx95_aom5521.h
++++ b/include/configs/imx95_aom5521.h
+@@ -11,6 +11,7 @@
+ #include <asm/arch/imx-regs.h>
+ 
+ #define CFG_HAS_ETH1 1
++#define CFG_HAS_ETH2 1
+ 
+ #define CFG_SYS_INIT_RAM_ADDR	0x90000000
+ #define CFG_SYS_INIT_RAM_SIZE	0x200000

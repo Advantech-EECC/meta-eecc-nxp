@@ -1,0 +1,53 @@
+From 1a309d13fe3ab9302b3559eb0e5b0993e7c2d36e Mon Sep 17 00:00:00 2001
+From: SeanChuang2 <dinner0828@gmail.com>
+Date: Mon, 2 Feb 2026 11:55:54 +0800
+Subject: [PATCH] dts: Enable USB2 gadget for UUU tool
+
+Upstream-Status: Inappropriate [other]
+---
+ arch/arm/dts/imx95-aom5521-a2-u-boot.dtsi | 25 +++++++++++++++++++++++
+ 1 file changed, 25 insertions(+)
+
+diff --git a/arch/arm/dts/imx95-aom5521-a2-u-boot.dtsi b/arch/arm/dts/imx95-aom5521-a2-u-boot.dtsi
+index f2082b3f7d3..7f41b8c5587 100644
+--- a/arch/arm/dts/imx95-aom5521-a2-u-boot.dtsi
++++ b/arch/arm/dts/imx95-aom5521-a2-u-boot.dtsi
+@@ -6,6 +6,22 @@
+ #include "imx95-u-boot.dtsi"
+ #include "imx95-aom5521-a2-local.dtsi"
+ 
++/ {
++	aliases {
++		usb0 = &usb3_dwc3;
++		usb1 = &usb2;
++		usb_gadget1 = &usbg2;
++	};
++
++	usbg2: usbg2 {
++		compatible = "fsl,imx27-usb-gadget";
++		dr_mode = "peripheral";
++		chipidea,usb = <&usb2>;
++		bootph-pre-ram;
++		status = "okay";
++	};
++};
++
+ &scmi_iomuxc {
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&pinctrl_hog>;
+@@ -81,6 +97,15 @@
+ &usb2 {
+ 	compatible = "fsl,imx8mm-usb", "fsl,imx7d-usb";
+ 	/delete-property/power-domains;
++	bootph-pre-ram;
++};
++
++&usbmisc {
++	bootph-pre-ram;
++};
++
++&usbphynop {
++	bootph-pre-ram;
+ };
+ 
+ &usb3 {
