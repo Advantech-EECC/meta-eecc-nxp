@@ -7,17 +7,17 @@ Changes from: https://github.com/ADVANTECH-Corp/uboot-imx/tree/lf_v2025.04
 
 Upstream-Status: Inappropriate [other]
 ---
- arch/arm/dts/imx95-aom5521-a2-local.dtsi  | 66 ++++++++++++++++++-----
- arch/arm/dts/imx95-aom5521-a2-u-boot.dtsi |  2 +
- arch/arm/dts/imx95-aom5521-a2.dts         |  7 +--
+ arch/arm/dts/aom5521a2-db2510-local.dtsi  | 66 ++++++++++++++++++-----
+ arch/arm/dts/aom5521a2-db2510-u-boot.dtsi |  2 +
+ arch/arm/dts/aom5521a2-db2510.dts         |  7 +--
  configs/imx95_aom5521a2_8G_defconfig      |  2 +-
  drivers/usb/dwc3/gadget.c                 |  2 +
  5 files changed, 62 insertions(+), 17 deletions(-)
 
-diff --git a/arch/arm/dts/imx95-aom5521-a2-local.dtsi b/arch/arm/dts/imx95-aom5521-a2-local.dtsi
+diff --git a/arch/arm/dts/aom5521a2-db2510-local.dtsi b/arch/arm/dts/aom5521a2-db2510-local.dtsi
 index a6c569bc8ed..8a7f44125da 100644
---- a/arch/arm/dts/imx95-aom5521-a2-local.dtsi
-+++ b/arch/arm/dts/imx95-aom5521-a2-local.dtsi
+--- a/arch/arm/dts/aom5521a2-db2510-local.dtsi
++++ b/arch/arm/dts/aom5521a2-db2510-local.dtsi
 @@ -63,6 +63,28 @@
  		vin-supply = <&reg_serdes_stby>;
  		gpio = <&i2c5_pcal6408 3 GPIO_ACTIVE_LOW>;
@@ -133,10 +133,10 @@ index a6c569bc8ed..8a7f44125da 100644
  	pinctrl_emdio: emdiogrp{
  		fsl,pins = <
  			IMX95_PAD_ENET1_MDC__NETCMIX_TOP_NETC_MDC		0x57e
-diff --git a/arch/arm/dts/imx95-aom5521-a2-u-boot.dtsi b/arch/arm/dts/imx95-aom5521-a2-u-boot.dtsi
+diff --git a/arch/arm/dts/aom5521a2-db2510-u-boot.dtsi b/arch/arm/dts/aom5521a2-db2510-u-boot.dtsi
 index 4faa13e9e22..45967c73835 100644
---- a/arch/arm/dts/imx95-aom5521-a2-u-boot.dtsi
-+++ b/arch/arm/dts/imx95-aom5521-a2-u-boot.dtsi
+--- a/arch/arm/dts/aom5521a2-db2510-u-boot.dtsi
++++ b/arch/arm/dts/aom5521a2-db2510-u-boot.dtsi
 @@ -106,10 +106,12 @@
  	label = "i2c5_io";
  };
@@ -150,10 +150,10 @@ index 4faa13e9e22..45967c73835 100644
  
  &flexspi1 {
  	bootph-pre-ram;
-diff --git a/arch/arm/dts/imx95-aom5521-a2.dts b/arch/arm/dts/imx95-aom5521-a2.dts
+diff --git a/arch/arm/dts/aom5521a2-db2510.dts b/arch/arm/dts/aom5521a2-db2510.dts
 index 9039694c322..1bceac0f6e7 100644
---- a/arch/arm/dts/imx95-aom5521-a2.dts
-+++ b/arch/arm/dts/imx95-aom5521-a2.dts
+--- a/arch/arm/dts/aom5521a2-db2510.dts
++++ b/arch/arm/dts/aom5521a2-db2510.dts
 @@ -274,7 +274,7 @@
  	pinctrl-names = "default";
  	pinctrl-0 = <&pinctrl_lpi2c6>;
@@ -194,7 +194,7 @@ index b2c66ca7bca..c74c1295810 100644
 @@ -14,7 +14,7 @@ CONFIG_ENV_OFFSET=0x700000
  CONFIG_IMX_CONFIG="arch/arm/mach-imx/imx9/scmi/imximage.cfg"
  CONFIG_DM_GPIO=y
- CONFIG_DEFAULT_DEVICE_TREE="imx95-aom5521-a2"
+ CONFIG_DEFAULT_DEVICE_TREE="aom5521a2-db2510"
 -CONFIG_USB_TCPC=y
 +# CONFIG_USB_TCPC is not set
  CONFIG_TARGET_IMX95_AOM5521A2_8G=y

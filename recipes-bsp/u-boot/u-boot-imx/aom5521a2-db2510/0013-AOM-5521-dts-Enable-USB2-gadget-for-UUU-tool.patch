@@ -7,16 +7,16 @@ Changes from: https://github.com/ADVANTECH-Corp/uboot-imx/tree/lf_v2025.04
 
 Upstream-Status: Inappropriate [other]
 ---
- arch/arm/dts/imx95-aom5521-a2-u-boot.dtsi | 25 +++++++++++++++++++++++
+ arch/arm/dts/aom5521a2-db2510-u-boot.dtsi | 25 +++++++++++++++++++++++
  1 file changed, 25 insertions(+)
 
-diff --git a/arch/arm/dts/imx95-aom5521-a2-u-boot.dtsi b/arch/arm/dts/imx95-aom5521-a2-u-boot.dtsi
+diff --git a/arch/arm/dts/aom5521a2-db2510-u-boot.dtsi b/arch/arm/dts/aom5521a2-db2510-u-boot.dtsi
 index f2082b3f7d3..7f41b8c5587 100644
---- a/arch/arm/dts/imx95-aom5521-a2-u-boot.dtsi
-+++ b/arch/arm/dts/imx95-aom5521-a2-u-boot.dtsi
+--- a/arch/arm/dts/aom5521a2-db2510-u-boot.dtsi
++++ b/arch/arm/dts/aom5521a2-db2510-u-boot.dtsi
 @@ -6,6 +6,22 @@
  #include "imx95-u-boot.dtsi"
- #include "imx95-aom5521-a2-local.dtsi"
+ #include "aom5521a2-db2510-local.dtsi"
  
 +/ {
 +	aliases {

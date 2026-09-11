@@ -7,14 +7,14 @@ Changes from: https://github.com/ADVANTECH-Corp/uboot-imx/tree/lf_v2025.04
 
 Upstream-Status: Inappropriate [other]
 ---
- arch/arm/dts/imx95-aom5521-a2-u-boot.dtsi |  4 ----
- arch/arm/dts/imx95-aom5521-a2.dts         | 19 ++++++-------------
+ arch/arm/dts/aom5521a2-db2510-u-boot.dtsi |  4 ----
+ arch/arm/dts/aom5521a2-db2510.dts         | 19 ++++++-------------
  2 files changed, 6 insertions(+), 17 deletions(-)
 
-diff --git a/arch/arm/dts/imx95-aom5521-a2-u-boot.dtsi b/arch/arm/dts/imx95-aom5521-a2-u-boot.dtsi
+diff --git a/arch/arm/dts/aom5521a2-db2510-u-boot.dtsi b/arch/arm/dts/aom5521a2-db2510-u-boot.dtsi
 index 45967c73835..f2082b3f7d3 100644
---- a/arch/arm/dts/imx95-aom5521-a2-u-boot.dtsi
-+++ b/arch/arm/dts/imx95-aom5521-a2-u-boot.dtsi
+--- a/arch/arm/dts/aom5521a2-db2510-u-boot.dtsi
++++ b/arch/arm/dts/aom5521a2-db2510-u-boot.dtsi
 @@ -115,10 +115,6 @@
  
  &flexspi1 {
@@ -26,10 +26,10 @@ index 45967c73835..f2082b3f7d3 100644
  };
  
  &pinctrl_flexspi1 {
-diff --git a/arch/arm/dts/imx95-aom5521-a2.dts b/arch/arm/dts/imx95-aom5521-a2.dts
+diff --git a/arch/arm/dts/aom5521a2-db2510.dts b/arch/arm/dts/aom5521a2-db2510.dts
 index 1bceac0f6e7..869db0c02e6 100644
---- a/arch/arm/dts/imx95-aom5521-a2.dts
-+++ b/arch/arm/dts/imx95-aom5521-a2.dts
+--- a/arch/arm/dts/aom5521a2-db2510.dts
++++ b/arch/arm/dts/aom5521a2-db2510.dts
 @@ -198,17 +198,14 @@
  	pinctrl-0 = <&pinctrl_flexspi1>;
  	status = "okay";
