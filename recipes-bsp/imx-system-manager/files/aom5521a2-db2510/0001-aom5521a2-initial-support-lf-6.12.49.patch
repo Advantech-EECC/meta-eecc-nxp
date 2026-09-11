@@ -1,7 +1,7 @@
 From 9deffb1ce240d715d21a1d05fdea425deb542836 Mon Sep 17 00:00:00 2001
 From: Mikhail Tsukerman <mikhail.tsukerman@advantech.com>
 Date: Wed, 19 Aug 2026 16:21:46 +0200
-Subject: [PATCH 1/2] AOM5521 A1 initial support
+Subject: [PATCH] AOM5521 A2 initial support
 
 Forward port changes from
 https://github.com/ADVANTECH-Corp/imx-sm/tree/lf-6.6.52-2.2.0-imx95-aom5521a1
