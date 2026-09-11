@@ -3,6 +3,8 @@ From: Ramiro Oliveira <ramiro.oliveira@advantech.com>
 Date: Wed, 9 Sep 2026 19:56:30 +0200
 Subject: [PATCH] Add common folder
 
+Changes from: https://github.com/ADVANTECH-Corp/uboot-imx/tree/lf_v2025.04
+
 Upstream-Status: Inappropriate [other]
 
 Signed-off-by: Ramiro Oliveira <ramiro.oliveira@advantech.com>

@@ -3,6 +3,8 @@ From: SeanChuang2 <dinner0828@gmail.com>
 Date: Wed, 9 Jul 2025 17:40:14 +0800
 Subject: [PATCH] fixed otg serial download issue
 
+Changes from: https://github.com/ADVANTECH-Corp/uboot-imx/tree/lf_v2025.04
+
 Upstream-Status: Inappropriate [other]
 ---
  arch/arm/dts/imx95-aom5521-a2-local.dtsi  | 66 ++++++++++++++++++-----

@@ -3,6 +3,8 @@ From: SeanChuang2 <dinner0828@gmail.com>
 Date: Wed, 5 Mar 2025 12:14:47 +0800
 Subject: [PATCH] config: Add ADVANTECH IMX8 IMX9 definition
 
+Changes from: https://github.com/ADVANTECH-Corp/uboot-imx/tree/lf_v2025.04
+
 Upstream-Status: Inappropriate [other]
 ---
  arch/arm/mach-imx/Kconfig | 6 ++++++

@@ -3,6 +3,8 @@ From: SeanChuang2 <dinner0828@gmail.com>
 Date: Wed, 9 Jul 2025 17:10:14 +0800
 Subject: [PATCH] Add AOM-5521 project
 
+Changes from: https://github.com/ADVANTECH-Corp/uboot-imx/tree/lf_v2025.04
+
 Upstream-Status: Inappropriate [other]
 ---
  arch/arm/dts/Makefile                         |   1 +

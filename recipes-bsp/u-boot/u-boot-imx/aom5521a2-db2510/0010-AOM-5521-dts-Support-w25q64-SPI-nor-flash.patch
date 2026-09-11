@@ -3,6 +3,8 @@ From: SeanChuang2 <dinner0828@gmail.com>
 Date: Thu, 24 Jul 2025 13:34:12 +0800
 Subject: [PATCH] dts: Support w25q64 SPI nor flash
 
+Changes from: https://github.com/ADVANTECH-Corp/uboot-imx/tree/lf_v2025.04
+
 Upstream-Status: Inappropriate [other]
 ---
  arch/arm/dts/imx95-aom5521-a2-u-boot.dtsi |  4 ----

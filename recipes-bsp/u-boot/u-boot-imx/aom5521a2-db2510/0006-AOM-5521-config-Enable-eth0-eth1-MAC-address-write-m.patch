@@ -3,6 +3,8 @@ From: SeanChuang2 <dinner0828@gmail.com>
 Date: Thu, 24 Jul 2025 13:22:34 +0800
 Subject: [PATCH] config: Enable eth0/eth1 MAC address write method
 
+Changes from: https://github.com/ADVANTECH-Corp/uboot-imx/tree/lf_v2025.04
+
 Upstream-Status: Inappropriate [other]
 ---
  configs/imx95_aom5521a2_8G_defconfig | 1 +

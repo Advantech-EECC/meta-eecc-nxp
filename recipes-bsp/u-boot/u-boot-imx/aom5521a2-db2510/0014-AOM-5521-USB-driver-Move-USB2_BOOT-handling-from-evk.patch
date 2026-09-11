@@ -3,6 +3,8 @@ From: SeanChuang2 <dinner0828@gmail.com>
 Date: Tue, 3 Feb 2026 14:42:26 +0800
 Subject: [PATCH] driver: Move USB2_BOOT handling from evk to advantech board
 
+Changes from: https://github.com/ADVANTECH-Corp/uboot-imx/tree/lf_v2025.04
+
 Upstream-Status: Inappropriate [other]
 ---
  board/advantech/imx95_aom5521a2/spl.c | 1 +
