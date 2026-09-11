@@ -1,0 +1,40 @@
+From a638751262546d905dfd50fd162d84f278851d59 Mon Sep 17 00:00:00 2001
+From: Ramiro Oliveira <ramiro.oliveira@advantech.com>
+Date: Wed, 9 Sep 2026 12:42:34 +0200
+Subject: [PATCH] Add missing includes
+Upstream-Status: Inappropriate
+
+Signed-off-by: Ramiro Oliveira <ramiro.oliveira@advantech.com>
+---
+ boards/mx95lp5_aom5521a2_8G/board.c | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
+
+diff --git a/boards/mx95lp5_aom5521a2_8G/board.c b/boards/mx95lp5_aom5521a2_8G/board.c
+index 1de0262..4bb490a 100644
+--- a/boards/mx95lp5_aom5521a2_8G/board.c
++++ b/boards/mx95lp5_aom5521a2_8G/board.c
+@@ -4,6 +4,7 @@
+  * SPDX-License-Identifier: BSD-3-Clause
+  */
+ 
++#include "clock.h"
+ #include "oei.h"
+ #include "board.h"
+ #include "fsl_lpuart.h"
+@@ -78,3 +79,16 @@ void BOARD_InitDebugConsole(void)
+             (uint32_t) rate & 0xFFFFFFFFU);
+     }
+ }
++
++/*--------------------------------------------------------------------------*/
++/* Initialize board                                                         */
++/*--------------------------------------------------------------------------*/
++void BOARD_InitHardware(void)
++{
++    Clock_Init();
++#if defined(DEBUG)
++    BOARD_InitPins();
++    BOARD_InitDebugConsole();
++#endif
++}
++

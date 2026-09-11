@@ -1,0 +1,58 @@
+From 0310608f1d0dac7e01860e7d0c737558029f8f99 Mon Sep 17 00:00:00 2001
+From: SeanChuang2 <dinner0828@gmail.com>
+Date: Wed, 9 Jul 2025 17:43:33 +0800
+Subject: [PATCH] Add SW_RESET_OUT
+
+Changes from: https://github.com/ADVANTECH-Corp/uboot-imx/tree/lf_v2025.04
+
+Upstream-Status: Inappropriate [other]
+---
+ .../imx95_aom5521a2/imx95_aom5521a2.c         | 28 +++++++++++++++++++
+ 1 file changed, 28 insertions(+)
+
+diff --git a/board/advantech/imx95_aom5521a2/imx95_aom5521a2.c b/board/advantech/imx95_aom5521a2/imx95_aom5521a2.c
+index dc858510c60..b5ff901a6fd 100644
+--- a/board/advantech/imx95_aom5521a2/imx95_aom5521a2.c
++++ b/board/advantech/imx95_aom5521a2/imx95_aom5521a2.c
+@@ -24,6 +24,32 @@
+ 
+ extern int board_fix_fdt_fuse(void *fdt);
+ 
++static void setup_iomux_swrst(void)
++{
++	int ret;
++	struct gpio_desc desc;
++
++	printf("[ADVANTECH] setup_iomux_swrst\n");
++
++	ret = dm_gpio_lookup_name("GPIO2_27", &desc);
++	if (ret) {
++		printf("%s lookup GPIO2_27 failed ret = %d\n", __func__, ret);
++		return;
++	}
++
++	ret = dm_gpio_request(&desc, "SW_RESET_OUT");
++	if (ret) {
++		printf("%s request SW_RESET_OUT failed ret = %d\n", __func__, ret);
++		return;
++	}
++
++	/* assert the SW_RESET_OUT */
++	dm_gpio_set_dir_flags(&desc, GPIOD_IS_OUT | GPIOD_IS_OUT_ACTIVE | GPIOD_ACTIVE_LOW);
++	udelay(10000);
++	dm_gpio_set_value(&desc, 0); /* deassert the SW_RESET_OUT */
++	udelay(80000);
++}
++
+ int board_early_init_f(void)
+ {
+ 	/* UART1: A55, UART2: M33, UART3: M7 */
+@@ -448,6 +474,8 @@ int board_init(void)
+ 	setup_typec();
+ #endif
+ 
++	setup_iomux_swrst();
++
+ 	netc_init();
+ 
+ 	flexspi_nor_steup();

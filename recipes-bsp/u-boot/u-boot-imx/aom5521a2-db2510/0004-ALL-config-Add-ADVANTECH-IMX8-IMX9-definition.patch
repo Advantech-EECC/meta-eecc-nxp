@@ -1,0 +1,29 @@
+From 5115f5942ca964707cb25af5af1feb74569350ba Mon Sep 17 00:00:00 2001
+From: SeanChuang2 <dinner0828@gmail.com>
+Date: Wed, 5 Mar 2025 12:14:47 +0800
+Subject: [PATCH] config: Add ADVANTECH IMX8 IMX9 definition
+
+Changes from: https://github.com/ADVANTECH-Corp/uboot-imx/tree/lf_v2025.04
+
+Upstream-Status: Inappropriate [other]
+---
+ arch/arm/mach-imx/Kconfig | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/arch/arm/mach-imx/Kconfig b/arch/arm/mach-imx/Kconfig
+index 18bde867e3f..bae47328c20 100644
+--- a/arch/arm/mach-imx/Kconfig
++++ b/arch/arm/mach-imx/Kconfig
+@@ -11,6 +11,12 @@ config IMX_CONFIG
+ 	depends on MACH_IMX
+ 	default "arch/arm/mach-imx/spl_sd.cfg"
+ 
++config ADVANTECH_MX8
++	bool "Support Advantech imx8 projects"
++
++config ADVANTECH_MX9
++	bool "Support Advantech imx9 projects"
++
+ config IMX_OPTEE
+ 	bool "Support OP-TEE"
+ 	help
